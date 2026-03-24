@@ -1,0 +1,1001 @@
+
+.edit-widget-container {
+    position: absolute;
+    z-index: 1000; 
+    justify-content: center; 
+    align-items: center; 
+    height: fit-content;
+    overflow-y: auto;
+    top: 2%; 
+    left: 50%;
+    transform: translateX(-50%);
+}
+
+/* style for main banner area */
+.blockA {
+    margin: 0;
+    width: 100%;
+    position: relative;
+    justify-content: center;
+    align-items: center;
+}
+
+.establishment-main-photo > img {
+    height:250px;
+    width: 100%;
+    object-fit: cover;
+    object-position: 70% 70%;
+}
+
+.establishment-text-box {
+    position: absolute;
+    bottom: 50%;
+    left: 50%;
+    transform: translate(-50%, 100%);
+    background-color: white;
+    opacity: 75%;
+    width: 75%;
+    height: 50%;
+    color: #523D35;
+    padding-left: 20px;
+    padding-right: 20px;
+    margin-bottom: 0.5%;
+    box-sizing: border-box;
+}
+
+.establishment-name {
+    font-family: 'Cardo';
+    font-size: xx-large;
+    font-weight: 400;
+    margin-top: 10px;
+    margin-bottom: 5px;
+}
+
+.star-rating-container {
+    display: flex; 
+    align-items: center; 
+}
+
+.establishment-text-box .star-rating,
+.review-section .star-rating,
+.review-data .star-rating {
+    display: flex;
+    align-items: center;
+    margin: 1%;
+    font-size: 24px !important;
+}
+
+.checked, .fa.fa-star-half-o{
+    color: #FFD700;
+    margin-right: 5px;
+}
+
+.average {
+    font-size: smaller;
+    margin-left: 5px; 
+}
+
+.establishment-text-box.location{
+    margin: 2%;
+}
+
+.fafa-map-marker {
+    color:#523D35;
+    margin-right: 5px;
+    font-size: medium;
+    margin-bottom: 5px;
+}
+
+/* style for main area */
+.main-area {
+    margin: 2px;
+    width: 100%;
+    display: flex;
+}
+
+.left-side {
+    width: 70%;
+    margin: 1%;
+}
+
+.right-side{
+    width: 30%;
+    height: 70%;
+    margin: 1%;
+    background-color: #959D90;
+    border: 3px solid #223030;
+}
+
+/* buttons container (write a review, share, favorite)*/
+.navigate-container {
+    display: flex;
+    justify-content: flex-start;
+    align-items: center; 
+    margin-left: 10%;
+    margin-top: 15px; 
+}
+
+/* share button 380 */
+.navigate-container button.share {
+    margin-right: 10px;
+    padding: 10px 20px;
+    width: 380%; 
+    font-family: 'Biryani', sans-serif;
+    font-size: 14px; 
+    font-weight: bolder;
+    background-color: #523D35;
+    border: 3px solid #523D35;
+    color: white;
+    border-radius: 8px;
+    cursor: pointer;
+}
+
+/* favorite button */
+.navigate-container button.favorite {
+    margin-right: 10px;
+    padding: 10px 20px;
+    width: 40%;
+    font-family: 'Biryani', sans-serif;
+    font-size: 14px; 
+    font-weight: bolder;
+    background-color: #523D35;
+    border: 3px solid #523D35;
+    color: white;
+    border-radius: 8px;
+    cursor: pointer;
+}
+
+/* hover styles for both buttons */
+.navigate-container button.share:hover,
+.navigate-container button.favorite:hover {
+    background-color: white;
+    color: #523D35;
+    border: 3px solid #523D35;
+}
+
+/* dropdown container */
+.share-dropdown {
+    position: relative;
+    display: inline-block;
+}
+
+/* dropdown content (hidden by default) */
+.share-dropdown-content {
+    display: none;
+    position: absolute;
+    background-color: #f9f9f9;
+    min-width: 160px;
+    box-shadow: 0px 8px 16px 0px rgba(0,0,0,0.2);
+    z-index: 1;
+}
+
+/* links inside the dropdown */
+.share-dropdown-content a {
+    color: #523D35;
+    padding: 12px 16px;
+    text-decoration: none;
+    display: flex;
+    align-items: center;
+}
+
+/* hover style */
+.share-dropdown-content a:hover {
+    background-color: #f1f1f1;
+}
+
+.share-dropdown:hover .share-dropdown-content {
+    display: block;
+}
+
+/* icons */
+.share-dropdown-content a i {
+    margin-right: 8px; 
+}
+
+/* write a review */
+.write-review {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
+
+.write-review-container {
+    display: flex;
+    width: 80%;
+    margin: 2%;
+    padding: 10px; 
+    background-color: #F5F5F5;
+    border: 5px solid #523D35;
+    border-radius: 15px; 
+    overflow: visible; 
+    box-sizing: border-box; 
+}
+
+div#create-review {
+	width: 80%;
+    margin-left: 10%;
+    margin-right: 8%;
+    display: flex;
+	flex-direction: column;
+	align-items: center;
+	border: 1px solid #826155;
+	background-color: #826155;
+	font-size: 16px;
+}
+
+.write-review.user-profile {
+    width: 80px; 
+    height: 80px; 
+    border-radius: 50%;
+    object-fit: cover;
+    margin-right: 10px;
+}
+
+.write-review form#post-form {
+    width: 100%;
+}
+
+input:focus, textarea:focus,
+button:focus, select:focus {
+	outline: none;
+}
+
+textarea {
+	border: 1px solid #E5E5E5;
+	resize: none;
+    font-family: 'Biryani', sans-serif;
+	font-size: 12px;
+}
+
+/* star rating for write a review*/
+.write-review-rating {
+    display: flex;
+    align-items: center;
+}
+
+.review-rating {
+    position: relative;
+}
+
+.review-rating span {
+    display: inline-block;
+    color: #666;
+    cursor: pointer;
+    font-size: 30px;
+}
+
+.review-rating .fa {
+    margin-right: 5px;
+}
+
+.review-rating .fa.highlighted {
+    color: #FFD700; 
+}
+
+.review-title, .location-container, .review-description {
+    margin-top: 1%;
+    width: 95%;
+    border-radius: 15px;
+    border: 2px solid #523D35;
+	background-color: #523D35;
+    display:flex;
+    font-family: 'Biryani', sans-serif;
+	font-size: 12px;
+    color: #F5F5F5;
+    padding: 10px;
+}
+
+input.review-title::placeholder,
+textarea.review-description::placeholder,
+.location-container {
+    color: #E5E5E5;
+    margin: 2px;
+}
+
+.review-location {
+    padding-left: 8px;
+}
+
+.write-review-hr {
+    border: 1px solid whitesmoke; 
+    margin-top: 1%; 
+    margin-bottom: 1%; 
+    width: 100%;
+    border-radius: 5px;
+}
+
+.photo-upload-date {
+    display: flex;
+    align-items: center;
+    margin-top: 10px; 
+}
+
+.photo-upload-container {
+    display: flex;
+    align-items: center;
+}
+
+.photo-upload {
+    display: none;
+}
+
+.photo-upload-label {
+    width: 120%;
+    margin-top: 2%;
+    padding: 5px;
+    border-radius: 5px;
+    cursor: pointer;
+    display: inline-block;
+    background-color: #F5F5F5;
+    color: #523D35;
+    font-family: 'Biryani', sans-serif;
+    font-size: 12px;
+    font-weight: bolder;
+}
+
+.photo-preview {
+    margin-top: 10px;
+    max-width: 100%; 
+}
+
+.photo-upload-label:hover {
+    background-color: #523D35;
+    border: #523D35;
+    border-radius: 10px;
+    color: #F5F5F5;
+}
+
+.date-and-submit {
+    margin-left: 10px; 
+}
+
+/* submit button */
+input#post-date {
+    width: 100%; 
+    font-family: 'Lato', sans-serif;
+	text-align: center;
+	vertical-align: middle;
+	text-transform: uppercase;
+	background-color: #F5F5F5;
+    color: #523D35;
+	font-weight: 700;
+	font-size: 12px;
+    border: 1px solid #f5f5f5;
+    border-radius: 15px;
+}
+
+.post-review-button { 
+    margin-top: 10px;
+    margin-left: auto; 
+    margin-right: 10px;
+    align-self: flex-end;
+    width: 20%;
+    border: 2px solid #523D35;
+    border-radius: 15px;
+    background-color: #F5F5F5;
+    color: #523D35;
+    font-family: 'Biryani', sans-serif;
+    font-size: 12px;
+    font-weight: bolder;
+}
+
+.post-review-button:hover {
+	border: 2px solid #523D35;
+    border-radius: 15px;
+    background-color: #523D35;
+	color: #F5F5F5;
+}
+
+/* overall rating */
+.reviews-header {
+    color: #523D35;
+    font-family: 'Cardo';
+    font-weight: 500;
+    font-size: xx-large;
+    margin-left: 10%;
+    margin-top: 3%;
+}
+
+.review-section {
+    width: 80%;
+    margin: 0 auto 20px;
+}
+
+.overall-rating {
+    margin-bottom: 20px;
+}
+
+/* progress bars */
+.progress-bars {
+    display: flex;
+    flex-direction: column;
+}
+
+.progress-bar {
+    display: flex;
+    align-items: center;
+    background-color: #BBA58E;
+    color: white;
+    padding: 5px;
+    margin-bottom: 5px;
+    font-family: 'Biryani', sans-serif;
+    height: 30px;
+    min-width: 140px;
+}
+
+.progress-star.checked {
+    color: white;
+}
+
+.progress-star {
+    color: #523D35;
+}
+
+/* feed header */
+.feed-header {
+    color: #523D35;
+    font-family: 'Cardo';
+    font-weight: 500;
+    font-size: x-large;
+    margin-left: 10%;
+    margin-top: 1%;
+    margin-bottom: 1%;
+}
+
+/* filter and sort section */
+.filter-sort-options {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-top: 1%;
+    margin-bottom: 1%;
+    margin-left: 10%;
+    margin-right: 10%;
+}
+
+.rating-option {
+    cursor: pointer;
+    margin-right: 5px;
+    padding: 5px 10px;
+    border: 1px solid #ccc;
+    border-radius: 3px;
+}
+
+.star-filter {
+    display: flex;
+    align-items: center;
+}
+
+label[for="star-filter"], label[for="sort"] {
+    font-family: 'Cardo';
+    font-size: 16px; 
+    color: #333;
+    margin-right: 5px;
+}
+
+.star-dropdown {
+    position: relative;
+}
+
+.star-dropdown input {
+    display: none;
+}
+
+.star-dropdown label {
+    display: inline-block;
+    padding: 8px 12px;
+    background-color: #eee;
+    border-radius: 5px;
+    margin-right: 5px;
+    cursor: pointer;
+}
+
+.star-dropdown input:checked + label {
+    background-color: #BBA58E;
+    color: white;
+}
+
+.sort-by select {
+    padding: 8px 12px;
+    border: 1px solid #ddd;
+    border-radius: 5px;
+    cursor: pointer;
+}
+
+/* review feed */
+.review-feed {
+    margin: 0 auto;
+    width: 80%; 
+}
+
+.review-container {
+    display: flex;
+    align-items: flex-start;
+    border: 1px solid #ddd;
+    border-radius: 5px;
+    margin-bottom: 20px;
+    padding: 10px;
+}
+
+/* review menu (edit, delete, report) */
+.review-menu {
+    justify-content: flex-end;
+    display: flex;
+    margin-right: 10px;
+}
+
+.review-options {
+    position: absolute;
+    bottom: 100%; 
+    left: 0; 
+    background-color: #fff;
+    border: 1px solid #ccc;
+    border-radius: 5px;
+    box-shadow: 0 0 5px rgba(0, 0, 0, 0.1);
+    padding: 5px;
+    display: none; 
+}
+
+.options span {
+    font-size: 10px;
+}
+
+.review-menu:hover .review-options {
+    display: block;
+    margin-right: 40px;
+}
+
+.review-menu button {
+    padding: 4px 8px;
+    width: auto; 
+    height: 100%;
+    font-family: 'Biryani', sans-serif;
+    font-size: 8px; 
+    font-weight: bolder;
+    color: #EFEFE9;
+    background-color: #523D35;
+    border: 2px solid #EFEFE9; 
+    border-radius: 6px;
+    cursor: pointer;
+}
+
+.review-menu button:hover {
+    background-color: #EFEFE9;
+    color: #523D35;
+    border: 2px solid #523D35;
+}
+
+/* used for hiding widget */
+.hidden {
+    display: none;
+}
+
+/* edit star review rating */
+.edit-review-rating{
+    margin-bottom: 3%;
+}
+
+/* user profile */
+.user-profile-establishment {
+    display: flex;
+    align-items: center;
+}
+
+.user-profile-establishment img {
+    width: 60px;
+    height: 60px; 
+    object-fit: cover;
+    border-radius: 50%;
+    margin-right: 10px;
+    margin-bottom: 1%;
+}
+
+.profile-text {
+    margin-bottom: 5px;
+}
+
+.user-profile-establishment .display-name {
+    font-weight: bold;
+    font-family: 'Biryani', sans-serif;
+    color: #223030;
+}
+
+.user-profile-establishment .username {
+    font-family: 'Biryani', sans-serif;
+    font-size: small;
+    color: #959D90;
+}
+
+/* star rating */
+.star-rating {
+    font-size: 0.8em;
+    color: #777;
+    text-align: left;
+}
+
+/* review-title */
+.title {
+    margin-bottom: 0; 
+    font-family: 'Biryani', sans-serif;
+    font-size: medium;
+    font-weight:800;
+}
+
+/* caption */
+.caption {
+    margin-top: 0; 
+    margin-bottom: 5px; 
+    font-family: 'Biryani', sans-serif;
+    font-size: smaller;
+}
+
+/* date posted */
+.date-posted {
+    font-size: 0.8em;
+    color: #777;
+    text-align: left;
+}
+
+/* review photo box */
+.review-photo-box {
+    width: 400px;
+    height: 275px;
+    border-radius: 5px;
+    overflow: hidden;
+    margin-right: 20px; 
+    float: left; 
+}
+
+.review-photo {
+    width: 100%;
+    height: auto;
+    object-position: bottom bottom;
+}
+
+.vertical-line {
+    width: 10px; 
+    height: 100%; 
+    background-color: #666;
+}
+
+/* reactions */
+.reactions {
+    margin-top: auto; 
+}
+
+.reactions button {
+    margin-right: 10px;
+    padding: 5px 10px;
+    border: none;
+    border-radius: 3px;
+    cursor: pointer;
+    background-color: #959D90;
+    color: #223030;
+    font-family: 'Biryani', sans-serif;
+    font-size: 11px;
+    font-weight: bold;
+}
+
+.reactions button:hover.not-helpful {
+    background-color: #ff6961;
+    color: white;
+}
+
+.reactions button:hover.helpful {
+    background-color: #f4bc1c;
+    color: white;
+}
+
+.reactions button:hover.comment {
+    background-color: #006ca5;
+    color: white;
+}
+
+/* Write a comment */
+.comment-box {
+    display: flex;
+    align-items: flex-start;
+    margin-top: 10px;
+}
+
+.user-profile-comment {
+    margin-right: 10px;
+}
+
+.user-profile-comment img {
+    width: 40px; 
+    height: 40px;
+    border-radius: 50%; 
+}
+
+.comment-content {
+    display: flex;
+    width: 100%;
+    flex-direction: column;
+    flex-grow: 1;
+}
+
+.comment-box .comment-content textarea {
+    width: 95%; 
+    height: 40px; /* Adjust height as needed */
+    margin-bottom: 1%;
+    margin-right: 15px;
+    border-radius: 3px;
+    border: 1px solid #E5E5E5;
+    background-color: #E5E5E5;
+    font-family: 'Biryani', sans-serif;
+    font-size: 12px;
+    color: #333;
+}
+.post-comment-button { 
+    align-items: flex-end; 
+    margin-left: 75%; 
+    margin-top: 1%;
+    width: 20%;
+    padding: 20 15;
+    
+    border: 2px solid #523D35;
+    border-radius: 10px;
+    background-color: #523D35;
+    color: white;
+    font-family: 'Biryani', sans-serif;
+    font-size: 12px;
+    font-weight: bolder;
+}
+
+.post-comment-button:hover {
+    border-radius: 10px;
+    border: 2px solid #523D35;
+    background-color: transparent;
+    color: #523D35;
+}
+
+/* comment section */
+.comment-section {
+    border-top: 1px solid #ddd;
+    padding-top: 10px;
+    margin-top: 10px;
+    margin-bottom: 2%;
+    display: flex;
+    flex-direction: column;
+}
+
+.comment-section .user-profile-establishment img {
+    width: 30px;
+    height: 30px; 
+    object-fit: cover;
+    border-radius: 50%;
+    margin-right: 5px; 
+}
+
+.comment-section .profile-text {
+    flex: 1; 
+}
+
+.comment-section .profile-text .username {
+    font-weight: bold;
+    font-family: 'Biryani', sans-serif;
+    color: #223030;
+    font-size: small;
+}
+.comment-section .profile-text .owner-tag {
+    color: gray;
+}
+
+.comment-section .profile-text .comment-box {
+    font-size: smaller;
+    font-family: 'Biryani', sans-serif;
+    color: #223030;
+    margin-top: 0;
+}
+
+/* right section of the page */
+
+
+/* edit establishment button */
+.edit-establishment {
+    position:relative;
+    display: flex;
+    padding: 10px 0;
+    align-items: center;
+    margin-right: 10px;
+}
+
+.edit-establishment button {
+    padding: 4px 8px;
+    width: auto; 
+    height: 100%;
+    font-family: 'Biryani', sans-serif;
+    font-size: 8px; 
+    font-weight: bolder;
+    color: #EFEFE9;
+    background-color: #223030;
+    border: 2px solid #EFEFE9; 
+    border-radius: 6px;
+    cursor: pointer;
+}
+
+.edit-establishment a {
+    color: #333;
+    font-weight: normal;
+    font-size: 14px;
+    text-decoration: none;
+    transition: color 0.3s ease;
+    margin-right: 10px;
+    font-family: 'Biryani', sans-serif;
+}
+
+.edit-establishment a:hover {
+    color: #666;
+}
+
+.options-dropdown button {
+    color: #523D35;
+    padding: 12px 16px;
+    text-decoration: none;
+    display: block;
+    font-family: 'Biryani', sans-serif;
+    background-color: transparent;
+    border: none;
+    width: 100%;
+    text-align: left;
+}
+
+/* other services */
+
+hr.h1 {
+    border:1px solid #223030; 
+}
+ 
+.establishment-photos, .about-section,
+.services-section, .price-range-section
+.schedule-section, .contact-details-section,
+.location-map-section, .owner-section {
+    margin: 3%;
+    padding: 0;
+}
+
+.establishment-photos > .fa.fa-camera, .fa.fa-info-circle, 
+.fa.fa-coffee, .fa.fa-money, .fa.fa-clock-o, 
+.fa.fa-phone,  .fa.fa-map-marker, .fa.fa-user {
+    color: white;
+    font-size: large; 
+    margin-right: 3px;
+}
+
+.header-text-photogrid, .about-header, 
+.services-header, .price-range-header,
+.schedule-header,  .contact-header, 
+.location-map-header, .owner-section {
+    font-family: 'Cardo';
+    font-weight: 400;
+    color: white;
+    font-size: large;
+    text-align: left;
+    margin-top: 3%;
+}
+
+.about-edit-container {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+/* photo grid section */
+.column {
+    float: left;
+    width: 50%;
+    padding: 10px;
+    box-sizing: border-box;
+}
+
+.column img {
+    display: block;
+    width: 100%; 
+    margin-bottom: 15px;
+    border-radius: 5%;
+    border-radius: 5%;
+}
+
+.row:after {
+    content: "";
+    display: table;
+    clear: both;
+}
+
+/* about and price range section */
+.introduction, .price-range {
+    font-family: 'Biryani', sans-serif;
+    font-weight: 400;
+    color: #223030; 
+    font-size: small;
+    margin: 0;
+    padding: 0;
+}
+
+.price-range{
+    font-size: medium;
+}
+
+/* services list section */
+.services-list.fa.fa-check {
+    color: #223030;
+    font-size: 26px;
+    margin-top: 5px;
+    margin-right: 5px;
+    vertical-align: middle; 
+}
+
+.services-list { 
+    font-family: 'Biryani', sans-serif;
+    font-size: small;
+    color: #223030;
+}
+
+/* schedule section */
+.column-weekdays, .column-schedule {
+    font-family: 'Biryani', sans-serif;
+    font-weight: 400;
+    color: #223030; 
+    font-size: small;
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+    float: left;
+}
+
+.column-weekdays {
+    width: 30%; 
+}
+
+.column-schedule {
+    width: 70%; /
+}
+
+.row-schedule {
+    margin-top: 10px; 
+    overflow: hidden; 
+}
+
+/* contact details section */
+.fa.fa-facebook-square, .fa.fa-instagram {
+    color: #223030;
+    font-size: 26px;
+    margin-top: 5px;
+    margin-right: 5px;
+    vertical-align: middle;
+}
+
+.facebook-page, .instagram-page {
+    color: #223030; 
+    font-family: 'Biryani', sans-serif;
+    font-size: 12px;
+    font-weight: bold;
+}
+
+/* map section */
+.address{
+    margin-top: 5px;
+    margin-bottom: 0px;
+    font-family: 'Biryani', sans-serif;
+    font-size: 12px;
+    font-style: italic;
+    color: #223030;
+}
+
+#establishment-map{
+    margin: 2%;
+    align-items: center;
+    width: 390px; 
+    height: 350px;
+    border: 0;
+}
+
+/* owner details section */
+.owner {
+    margin: 2px;
+    font-family: 'Biryani', sans-serif;
+    font-size: 14px;
+    font-style: bolder;
+    color: #223030;
+}

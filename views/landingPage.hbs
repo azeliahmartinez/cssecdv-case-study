@@ -1,0 +1,110 @@
+<!-- container for the header -->
+<div class="parent-header">
+    {{#if isLoggedIn}}
+        {{#if isOwner}}
+            {{> headerOwner}}
+        {{else if isRater}}
+            {{> headerUser}}
+        {{else}}
+            {{> headerNonUser}}
+        {{/if}}
+    {{else}}
+        {{> headerNonUser}}
+    {{/if}}
+</div>
+
+
+
+<div class="greeting-container">
+    <div class="greeting">
+        <p class="serif brown">Welcome back, {{currentUser}}. Here's what your brew buddies have been up to..</p>
+    </div>
+</div>
+
+<div class="view-more">
+    <a class="sans-serif green bold">NEW FROM FRIENDS</a>
+</div>
+
+<hr>
+{{#if noRecentReviewsFromFriends}}
+<div class="brewing">No recent reviews from brew buddies. They are still brewing up something to say.</div>
+{{else}}
+<div class="friend-reviews-container">
+{{#each review-data}}    
+    <div  class="review overflow margin-right">
+                
+        <!--TOP PART / GREEN-->
+        
+        <div class="user-profile">
+            <div onclick="redirectToProfile('{{username}}')" class="profile-image-username-container">
+                {{> redirectProfile}}
+            </div>
+            <div class="review-ratings-container">
+                <p class="review-ratings">{{rating}}</p><i class="fa fa-star star-icon" id="reviewstar"></i>
+            </div>
+        </div>
+        
+        <!--BOTTOM PART-->
+        <div class="review-image-caption-container">
+            
+            <div class="review-photo-box">
+                <img class="review-photo" src="{{review_photo}}" alt="Review Picture">
+            </div>
+
+            <div class="review-text">
+            <a onclick="redirectToEstablishment('{{place_name}}')" class="place-name brown">{{place_name}}</a>
+            <p class="caption">{{caption}}</p>
+            <p class="date-posted">{{date}}</p>
+            
+            </div>
+
+            
+        </div>
+    </div>
+
+{{/each}}
+</div> 
+{{/if}}
+
+<div class="view-more">
+    <a class="sans-serif green bold">POPULAR ON CO.FEED</a>
+    <p>
+    <a class="sans-serif green bold" href="/viewEstablishments">See all establishments</a>
+    <i class="fa fa-angle-right"></i>
+    </p>
+</div>
+
+<hr>
+
+<div class="trending-spots-container">
+    <div class="trending-spots-list">
+        {{#each establishment-data}}
+        <div class="establishment">
+            <img class="place-img" src={{banner_image}} alt="establishment"/>
+            <div class="info">
+                <div class="cafe-container">
+                    <p class="cafe">{{establishment_name}}</p>
+                    <div class="ratings-container">
+                        <p class="ratings">{{establishment_ratings}}</p>
+                        <i class="fa fa-star star-icon"></i>
+                    </div>                                 
+                </div>
+                <div class="details">
+                    <p class="location"><i class="fa fa-map-marker"></i>{{establishment_address}}</p>
+                </div>
+                <div class="description">
+                    <p class="desc"><i class="fa fa-info-circle"></i>{{establishment_description}}</p>
+                </div>
+                <div class="button-container2">
+                    <button id="see_more" onclick="redirectToEstablishment('{{establishment_name}}')">See More</button>
+                </div>
+            </div>       
+        </div>
+        {{/each}}
+    </div>
+</div>
+
+<!-- container for the footer -->
+<div class="parent-footer">
+    {{> footer}}
+</div>

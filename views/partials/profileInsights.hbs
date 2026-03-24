@@ -1,0 +1,56 @@
+<div class="blockc">
+    <!-- favorite places -->
+    <div class="main-area-titles">FAVORITE PLACES</div>
+            
+    <div class="horizontal-line"></div>
+    {{#if noFavoritePlaces}}
+        <div class="brewing">No favorite places yet.</div>
+    {{else}}
+
+    <div class="favorite-places widget" data-widget-id="1">
+    {{#each establishment-data}}    
+        <div class="favorite-place">
+            <img src="{{banner_image}}" alt="Favorite Place">
+            <div class="profpage-widget-details">
+                <span onclick="redirectToEstablishment('{{establishment_name}}')" class="fav-place-name">{{establishment_name}}</span>
+                {{#if isLoggedIn}}
+                    <div class="profpage-menu">
+                        <button class="reaction-btn option" onclick="unlikeWidget('{{establishment_name}}')"><i class="fa fa-thumbs-down" aria-hidden="true"></i> </button> 
+                        <div class="options">
+                            <span>Unlike</span>
+                        </div>
+                    </div>
+                {{/if}}
+            </div>
+
+        </div>
+    {{/each}}
+    </div>
+    {{/if}}
+
+    <!-- created coffee shop reviews -->
+    <div class="main-area-titles">CREATED REVIEWS</div>
+            
+    <div class="horizontal-line"></div>
+    {{#if noCreatedReviews}}
+        <div class="brewing">No reviews created yet.</div>
+    {{else}}
+        <div class="coffee-shop-reviews widget" data-widget-id="2">
+            {{#each review-data}}
+            <div class="coffee-shop-review">
+                <img src="{{review_photo}}" alt="Coffee Shop Review">
+                <div class="profpage-widget-details">
+                    <span onclick="redirectToEstablishment('{{place_name}}')" class="createdrev-place-name">{{place_name}}</span>
+                    {{#if isLoggedIn}}
+                    <div class="profpage-menu">
+                        <button class="reaction-btn option" onclick="redirectToEstablishment('{{place_name}}')"><i class="fa fa-pencil" aria-hidden="true"></i> </button>
+                        <button class="reaction-btn option" onclick="removeReview('{{_id}}')"><i class="fa fa-trash" aria-hidden="true"></i> </button>
+                    </div>
+                    {{/if}}  
+                </div>
+                <div class="sub-title">Review Title : {{review_title}}</div>
+            </div>  
+            {{/each}} 
+        </div>
+    {{/if}}
+</div>

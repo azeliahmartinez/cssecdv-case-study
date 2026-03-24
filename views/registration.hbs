@@ -1,0 +1,61 @@
+<body class="registration-body">
+    
+<!-- container for the content -->
+<div class="parent-content-reg">
+    
+    <div class="left-reg">
+        <div class="img">
+            <img class="logo" src="https://i.imgocean.com/cofeed-29d40fe6757258600.png" alt="cofeed-3888275e2301b4b27.png"/>
+        </div>
+
+        <div class="details">
+            <p class="greeting"><b>Welcome,</b></p>
+            <p class="greeting"><b>Brew Buddy!</b></p>
+            <p class="tagline">Ready to Sip, Share, and</p>
+            <p class="tagline">Discover the Perfect Pour?</p>
+        </div>
+    </div>
+
+    <div class="vertical-line-reg"></div>
+    
+    <div class="right-reg">
+        <p class="main"><b>Create Account</b></p>
+        <form name="create-user" action="create-user" method="post" onsubmit="return submitForm()">
+            <div class="form-group">
+                <input name="name" type="text" placeholder="Name"></input>
+            </div>
+            <div class="form-group">
+                <input name="username" id="username-field" type="text" placeholder="Username"></input>
+            </div>
+            <div class="form-group">
+                <input name="bio" type="text" placeholder="Bio (optional)"></input>
+            </div>
+            <div class="form-group">
+                <input name="email" type="text" placeholder="Email"></input>
+            </div>
+            <div class="form-group">
+                <input name="password" id="password-field" type="password" placeholder="Password"></input>
+                <img src="https://i.imgocean.com/eye-close6c91a6ac25495e1f.png" alt="eye" id="toggle-password" onclick="togglePasswordVisibility('password-field', 'toggle-password')">
+            </div>
+            <div class="form-group">
+                <input name="password2" id="confirm-password-field" type="password" placeholder="Confirm Password"></input>
+                <img src="https://i.imgocean.com/eye-close6c91a6ac25495e1f.png" alt="eye" id="toggle-confirm-password" onclick="togglePasswordVisibility('confirm-password-field', 'toggle-confirm-password')">
+            </div>
+            <div class="form-group" id="userTypeRegister">
+                <label>Are you an establishment owner or a rater?</label>
+                <div class="radio-buttons">
+                    <input type="radio" name="userType" value="owner">
+                    <label>Establishment Owner</label>
+                    <input type="radio" name="userType" value="rater" checked>
+                    <label>Rater</label>
+                </div>
+            </div>
+            <input type="submit" class="registration" value="Sign Up"></input>
+        </form>
+        <p class="login-page"><a href="/login">Already have an account? Login Here</a></p>
+    
+    </div>
+
+</div>
+
+</body>

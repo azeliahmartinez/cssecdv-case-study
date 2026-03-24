@@ -1,0 +1,86 @@
+[{
+  "user_photo": "https://i.pinimg.com/736x/37/09/38/370938b94a8317ea6f3836cfceff4308.jpg",
+  "display_name": "Cady Heron",
+  "username": "cadyyy",
+  "rating": 4,
+  "review_photo": "https://i.imgocean.com/41C757A2-A946-4CD1-9B03-481F6781456F7560930fd7b92ffb.jpeg",
+  "review_title": "New favorite Cafe",
+  "place_name": "Kape Benito",
+  "caption": "A haven for study sessions! Cozy ambiance, ample seating, and excellent coffee. Perfect for productivity and focus. Highly recommended!",
+  "date_posted": "2024-01-15T09:45:00.000Z",
+  "comments": [
+    {
+    "user_icon": "https://i.pinimg.com/originals/c7/2f/cc/c72fcc17928f3b200bf3f0c79820ea20.jpg",
+    "username": "gretchh",
+    "comment": "nice review"
+    },
+    {
+      "user_icon": "https://i.pinimg.com/originals/d6/14/5c/d6145c2c8ee384d8cf0061918f2a3fa5.jpg",
+      "username": "reginaaa",
+      "comment": "oooo"
+    }
+  ]
+},
+{
+  "user_photo": "https://i.pinimg.com/originals/d6/14/5c/d6145c2c8ee384d8cf0061918f2a3fa5.jpg",
+  "display_name": "Regina George",
+  "username": "reginaaa",
+  "rating": 5,
+  "review_photo": "https://i.imgocean.com/IMG_20230620_141448575394c9a2c88a00.jpeg",
+  "review_title": "New favorite Cafe",
+  "place_name": "Kape Benito",
+  "caption": "Average experience. Decent coffee, okay ambiance. Limited seating, and a bit noisy. Suitable for a quick caffeine fix, but not for a focused study session.",
+  "date_posted": "2024-02-05T14:20:00.000Z",
+  "comments": [
+    {
+    "user_icon": "https://i.pinimg.com/736x/37/09/38/370938b94a8317ea6f3836cfceff4308.jpg",
+    "username": "cadyyy",
+    "comment": "woooow"
+    }
+  ]
+},
+{
+  "user_photo": "https://i.pinimg.com/originals/c7/2f/cc/c72fcc17928f3b200bf3f0c79820ea20.jpg",
+  "display_name": "Gretchen Wieners",
+  "username": "gretchh",
+  "rating": 1,
+  "review_photo": "https://lh3.googleusercontent.com/p/AF1QipN4AQDAGcfH6o9oGDflJCytFfSg_xAF2Borkpn3=s1360-w1360-h1020",
+  "review_title": "New favorite Cafe",
+  "place_name": "Frank & Dean Coffee",
+  "caption": "Frank & Dean Coffee is definitely not recommended for students looking to study. The uncomfortable atmosphere and distracting environment make it an unsuitable place for productive work or focused studying.",
+  "date_posted": "2024-02-20T18:30:00.000Z"
+},
+{
+  "user_photo": "https://i.pinimg.com/474x/9d/0e/be/9d0ebe82326c5e932d0a3149705dd934.jpg",
+  "display_name": "Karen Smith",
+  "username": "karen_",
+  "rating": 5,
+  "review_photo": "https://i.imgocean.com/IMG_6738b035f9a5f774ec5f.jpeg",
+  "review_title": "New favorite Cafe",
+  "place_name": "Kape Benito",
+  "caption": "The coffee shop provides a decent experience overall. While the ambiance is average and the coffee is satisfactory, it lacks the unique charm or standout qualities that would make it a memorable spot.",
+  "date_posted": "2024-03-05T21:15:00.000Z"
+},
+{
+  "user_photo": "https://i.redd.it/b42oeb66665a1.jpg",
+  "display_name": "Aaron Samuels",
+  "username": "aaaaron",
+  "rating": 5,
+  "review_photo": "https://lh3.googleusercontent.com/p/AF1QipNuKcXgBB4tn_ugaN0uSjt8TOrOHMs2SiSS4W7p=s1360-w1360-h1020",
+  "review_title": "New favorite Cafe",
+  "place_name": "Angkan Coffee Company",
+  "caption": "I had a delightful experience at this coffee shop. The cozy atmosphere, friendly staff, and great coffee selections make it a top choice for a relaxing time. The only drawback is the limited seating space during peak hours.",
+  "date_posted": "2024-03-26T11:00:00.000Z"
+},
+{
+  "user_photo": "https://i.redd.it/b42oeb66665a1.jpg",
+  "display_name": "Aaron Samuels",
+  "username": "aaaaron",
+  "rating": 3,
+  "review_photo": "",
+  "review_title": "Chill Spot",
+  "place_name": "Obscure Cafe",
+  "caption": "The cafe has a cozy vibe, perfect for hanging out with friends or studying. The coffee is decent, and the staff is friendly. Definitely worth a visit!",
+  "date_posted": "2024-03-28T07:45:00.000Z"
+}
+]

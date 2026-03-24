@@ -1,0 +1,35 @@
+<body class="registration-body">
+
+<div class="parent-content-reg">
+        
+        <div class="left-reg">
+            <div class="img">
+                <img class="logo" src="https://i.imgocean.com/cofeed-29d40fe6757258600.png" alt="cofeed-3888275e2301b4b27.png"/>
+            </div>
+            
+            <div class="details">
+                <p class="greeting"><b>Welcome,</b></p>
+                <p class="greeting"><b>Brew Buddy!</b></p>
+                <p class="tagline">Ready to Sip, Share, and</p>
+                <p class="tagline">Discover the Perfect Pour?</p>
+            </div>
+        
+        </div>
+        
+        <div class="vertical-line-reg"> </div>
+        
+        <div class="right-reg" id="avatar-container">
+            <p class="main"><b>Choose Your Avatar</b></p>
+            <form class="avatarForm" name="avatarForm" action="choose-avatar" method="post" onsubmit="return submitAvatarForm('{{username}}')">
+            {{#each user_icon}}
+                <div class="avatar">
+                    <input type="radio" name="avatar" value="{{user_icon}}">
+                    <img src="{{user_icon}}" alt="Avatar">
+                </div>
+            {{/each}}
+                <button type="submit" class="choose-avatar-button">Choose Avatar</button>
+            </form>
+        </div>
+    </div>
+
+</body>

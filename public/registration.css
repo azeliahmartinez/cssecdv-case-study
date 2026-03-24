@@ -1,0 +1,226 @@
+.registration-body {
+    background-color: #EFEFE9;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 100vh;
+}
+
+/* parent container */
+.parent-content-reg {
+    display: flex;
+    justify-content: space-around;
+    align-items: center;
+    background-color: #fff;
+    border-radius: 20px;
+    box-shadow: 0px 0px 20px rgba(0, 0, 0, 0.1);
+    overflow: hidden;
+    padding-left: 50px;
+    padding-right: 50px;
+    width: 100%;
+}
+
+/* left and right sections */
+.left-reg, .right-reg {
+    padding: 40px;
+    box-sizing: border-box;
+}
+
+/* vertical line */
+.vertical-line-reg {
+    background-color: gray;
+    width: 2px;
+    height: 80%;
+    margin: 0 20px;
+}
+
+/* logo */
+.logo {
+    width: 120px;
+    height: auto;
+    margin-bottom: 20px;
+    filter: brightness(0.8);
+    transition: filter 0.3s ease;
+}
+
+.logo:hover {
+    filter: brightness(1);
+}
+
+/* texts */
+.greeting, .main {
+    font-family: 'Cardo', serif;
+    font-size: 30px;
+    font-weight: bold;
+    display: inline-block;
+}
+
+.tagline {
+    font-size: 12px;
+    font-style: italic;
+}
+
+/* form styling */
+.form-group {
+    margin-bottom: 20px;
+    position: relative;
+    font-size: 12px;
+}
+
+.form-group input[type="text"], 
+.form-group input[type="password"] {
+    width: 100%;
+    padding: 10px;
+    border: none;
+    border-bottom: 2px solid #ccc;
+    background-color: #f9f9f9;
+    outline: none;
+}
+
+.form-group input[type="text"]::placeholder,
+.form-group input[type="password"]::placeholder {
+    color: #959D90;
+    position: absolute;
+    top: 5px; 
+    left: -15px;
+}
+
+.form-group img {
+    width: 20px;
+    cursor: pointer;
+    position: absolute;
+    right: -12px;
+    top: 50%;
+    transform: translateY(-50%);
+    filter: grayscale(50%);
+    transition: filter 0.3s ease;
+}
+
+.form-group img:hover {
+    filter: grayscale(0%);
+}
+
+/* radio button */
+.radio-buttons {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+}
+
+.radio-buttons input[type="radio"] {
+    margin-right: -21px;
+    margin-bottom: 7px;
+    cursor: pointer;
+}
+
+/* checkbox */
+.form-group input[type="checkbox"] {
+    margin-bottom: 6px;
+}
+
+.checkmark {
+    height: 20px;
+    width: 20px;
+    background-color: #fff;
+    border: 2px solid #ccc;
+    border-radius: 3px;
+    margin-right: 10px;
+    cursor: pointer;
+    transition: background-color 0.3s ease;
+}
+
+.checkmark:hover {
+    background-color: #f9f9f9;
+}
+
+.checkmark:after {
+    content: "";
+    display: block;
+    width: 10px;
+    height: 5px;
+    border: solid #ccc;
+    border-width: 0 2px 2px 0;
+    transform: rotate(45deg);
+    display: none;
+}
+
+.form-group input[type="checkbox"]:checked ~ .checkmark:after {
+    display: block;
+}
+
+/* submit button */
+.registration, .choose-avatar-button {
+    display: block;
+    width: 100%;
+    padding: 15px;
+    border: none;
+    border-radius: 5px;
+    background-color: #523d35;
+    color: #fff;
+    border: 3px solid #523D35;
+    font-size: 16px;
+    font-weight: bold;
+    cursor: pointer;
+    transition: background-color 0.3s ease;
+}
+
+.choose-avatar-button{
+    margin-top: 30px;
+}
+
+.registration:hover, .choose-avatar-button:hover {
+    background-color: #fff;
+    color: #523D35;
+    border: 3px solid #523D35;
+}
+
+/* links */
+.forgot-page a, .signup-page a, .login-page a {
+    color: #333;
+    margin-bottom: 10px;
+    font-size: 12px;
+    font-style: italic;
+}
+
+.forgot-page, .signup-page, .login-page{
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.signup-page a, .login-page a {
+    font-style: italic;
+}
+
+.signup-page a:hover, .login-page a:hover {
+    text-decoration: none;
+}
+
+/* avatar container */
+#avatar-container{
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
+
+.avatarForm{
+    text-align: center;
+}
+
+.avatar {
+    display: flex;
+    justify-content: center;
+    width: 100px;
+    height: 100px; 
+    margin: 10px;
+}
+
+.avatar img {
+    margin-left: 15px;
+    width: 100%;
+    height: 100%; 
+    object-fit: cover; 
+    border-radius: 50%;
+    border: 1px solid#959D90;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1); 
+}

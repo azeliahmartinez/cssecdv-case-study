@@ -1,0 +1,32 @@
+<div class="widget-container" id="listreview-widget">
+    <span class="close-btn" onclick="hideListReview()">x</span>
+    <div class="listreview-title">Created Reviews</div>
+    {{#each user-data.createdreview}}
+    <div class="listreviews">
+        <a onclick="redirectToEstablishment('{{place_name}}')">{{place_name}}: {{review_title}}</a>
+    </div>
+    {{/each}}
+</div>
+
+
+<div class="widget-container" id="followers-widget">
+    <span class="close-btn" onclick="hideFollowers()">x</span>
+    <div class="followers-title">Followers</div>
+    {{#each followers}}
+    <div class="follower">
+        <img class="follower-avatar" src="{{this.user_icon}}" alt="user">
+        <a onclick="redirectToProfile('{{this.username}}')">@{{this.username}}</a>
+    </div>
+    {{/each}}
+</div>
+
+<div class="widget-container" id="following-widget">
+    <span class="close-btn" onclick="hideFollowing()">x</span>
+    <div class="following-title">Following</div>
+    {{#each following}}
+    <div class="following">
+        <img class="follower-avatar" src="{{this.user_icon}}" alt="user">
+        <a onclick="redirectToProfile('{{this.username}}')">@{{this.username}}</a>
+    </div>
+    {{/each}}
+</div>

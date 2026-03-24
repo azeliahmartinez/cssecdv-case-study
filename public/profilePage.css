@@ -1,0 +1,341 @@
+/* parent container */
+.parent-content-profile{
+    background-color: #959D90; 
+    display: flex;
+    flex-direction: column;
+    justify-content: space-around;
+    align-items: center;
+    height: auto;
+}
+
+/* profile section */
+.blockb {
+    background-color: #959d90;
+    width: 100%;
+    height: 550px;
+    justify-content: center;
+    display: flex;
+    align-items: center;
+}
+
+.box-item-profile{
+    width: 100%;
+    display: flex;
+    align-items: center;
+    flex-direction: column;
+}
+
+.box-item-profile > img{
+    border-radius: 100%;
+    width: 150px;
+    height: 150px;
+    margin-bottom: 30px;
+}
+
+.box-item-profile > div {
+    text-align: center;
+}
+
+
+.box-item-profile > b { 
+    font-size: 25px;
+    color: white;
+    font-family: 'Biryani', sans-serif; 
+}
+
+.box-item-profile{
+    font-size: 25px; 
+    color: white;
+    font-family: 'Biryani', sans-serif;
+}
+
+.bio-text {
+    font-size: 15px; 
+    color: white;
+    font-weight: normal; 
+    font-family: 'Biryani', sans-serif;
+}
+
+/* main area */
+.blockc {
+    background-color: #EFEFEA;
+    width: 98%;
+    padding: 20px;
+    overflow-x: auto; 
+    white-space: nowrap;
+}
+
+.main-area-titles{
+    color: black;
+    font-size: 20px;
+    margin-bottom: 10px;
+    font-family: 'Biryani', sans-serif;
+    margin-top: 25px;
+}
+
+.horizontal-line{
+    width: 100%;
+    height: 1px;
+    background-color: black;
+    margin-bottom: 20px;
+}
+
+.divbox{
+    width: 150px;
+    height: 150px;
+    background-color: white;
+    display: inline-block; 
+    margin: -110px;
+    margin-top: 20px;
+    margin-left: 160px;
+    border-radius: 15%;
+}
+
+.inner-image > img{
+    width: 100px; 
+    height: 100px;
+    align-items: center;
+    border-radius: 15%;
+    justify-content: center;
+    margin-top: 25px;
+    margin-left: 25px;
+}
+
+.favorite-places,
+.coffee-shop-reviews {
+    display: flex; 
+    overflow-x: auto; 
+    gap: 20px; 
+    padding-bottom: 20px; 
+    width: calc(100% + 20px); 
+}
+
+.favorite-place,
+.coffee-shop-review {
+    position: relative;
+    border: 1px solid #ddd;
+    border-radius: 10px;
+    overflow: hidden;
+    margin-right: 20px; 
+    flex: 0 0 auto; 
+    width: 300px; 
+}
+
+.favorite-place img,
+.coffee-shop-review img {
+    width: 100%;
+    height: 150px;
+    object-fit: cover;
+}
+
+.fav-place-name,
+.createdrev-place-name,
+.review-text {
+    display: block;
+    padding: 5px;
+    font-family: 'Biryani', sans-serif;
+    font-size: 15px;
+    margin-top: 8px;
+}
+
+.main-area-titles {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+/* profile stats */
+.profile-stats {
+    display: flex;
+    justify-content: space-around;
+    padding: 10px 0;
+    border-top: 1px solid #ddd;
+    margin-top: 10px;
+}
+
+.profile-stats a {
+    color: #333;
+    font-weight: normal;
+    font-size: 14px;
+    text-decoration: none;
+    transition: color 0.3s ease;
+    margin-right: 10px;
+    font-family: 'Biryani', sans-serif;
+}
+
+.profile-stats a:hover {
+    color: #666;
+}
+
+/* followers widget style*/
+
+.widget-container a:hover {
+    color: #666;
+}
+
+.widget-container a,span {
+    color: #333;
+    font-weight: normal;
+    font-size: 14px;
+    text-decoration: none;
+    transition: color 0.3s ease;
+    margin-right: 10px;
+    font-family: 'Biryani', sans-serif;
+}
+
+.widget-container {
+    position: fixed;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    background-color: white;
+    padding: 20px;
+    border: 1px solid #ccc;
+    border-radius: 5px;
+    display: none;
+    width: 300px;
+    height: auto;
+}
+
+.widget-container.visible {
+    display: block;
+}
+
+.follower-avatar,
+.following-avatar{
+    width: 30px;
+    height: 30px;
+    border-radius: 50%;
+    margin-right: 10px;
+}
+
+.close-btn {
+    position: absolute;
+    top: 5px;
+    right: 5px;
+    cursor: pointer;
+    color: #523D35;
+}
+
+.followers-title,
+.following-title,
+.listreview-title{
+    color: #523D35;
+    font-size: 20px;
+    margin-bottom: 10px;
+    font-family: 'Biryani', sans-serif;
+    margin-top: 25px;
+    padding-bottom: 15px;
+}
+
+.follower
+.following,
+.listreviews{
+    font-family: 'Biryani', sans-serif;
+}
+
+.follower,
+.following {
+    display: flex;
+    align-items: center;
+    margin-bottom: 10px;
+}
+
+/* edit profile button */
+.edit-prof {
+    display: flex;
+    justify-content: space-around;
+    padding: 10px 0;
+    border-top: 1px solid #ddd;
+    margin-top: 5px;
+}
+
+.edit-prof a {
+    color: #333;
+    font-weight: normal;
+    font-size: 14px;
+    text-decoration: none;
+    transition: color 0.3s ease;
+    margin-right: 10px;
+    font-family: 'Biryani', sans-serif;
+}
+
+.edit-prof a:hover {
+    color: #666;
+}
+
+/* unlike */
+.options {
+    position: absolute;
+    bottom: 100%; 
+    left: 0; 
+    background-color: #fff;
+    border: 1px solid #ccc;
+    border-radius: 5px;
+    box-shadow: 0 0 5px rgba(0, 0, 0, 0.1);
+    padding: 5px;
+    display: none; 
+}
+
+.options span {
+    font-size: 10px;
+}
+
+.profpage-menu:hover .options {
+    display: block;
+    margin-right: 40px;
+}
+
+.profpage-widget-details{
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-right: 10px;
+}
+
+/* follow button */
+#follow-btn {
+    padding: 8px 16px;
+    border: 1px solid #dbdbdb;
+    border-radius: 4px;
+    font-size: 14px;
+    font-weight: bold;
+    color: #262626;
+    background-color: transparent;
+    cursor: pointer;
+    transition: background-color 0.3s ease;
+}
+
+#follow-btn:hover {
+    background-color: #fafafa;
+}
+
+#unfollow-btn {
+    padding: 8px 16px;
+    border: 1px solid #dbdbdb;
+    border-radius: 4px;
+    font-size: 14px;
+    font-weight: bold;
+    color: #262626;
+    background-color: transparent;
+    cursor: pointer;
+    transition: background-color 0.3s ease;
+}
+
+#unfollow-btn:hover {
+    background-color: #fafafa;
+}
+
+.sub-title{
+    font-size: 12px; 
+    font-weight: bold;
+    color: #777; 
+    margin-left: 5px;
+}
+
+#photo-preview img {
+    max-width: 150px; /* Adjust the maximum width as needed */
+    max-height: 150px; /* Adjust the maximum height as needed */
+    margin-top: 10px; /* Add margin for spacing */
+}
+

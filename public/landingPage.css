@@ -1,0 +1,129 @@
+.greeting-container{
+    display: flex;
+    justify-content: center;
+}
+
+.greeting>p{
+    padding-top: 2%;
+    font-size: 30px;
+}
+
+.banner-block-user{
+    display: flex;
+    background-image: url(https://i.imgocean.com/wallpaperflare.com_wallpaper-14588ee8ce5a6aa32.jpeg);
+    height:400px;
+    background-position: center;
+    background-repeat: no-repeat;
+    background-size: cover;
+    position: relative;
+}
+
+.banner-user{
+    background-color: rgba(255,255,255, 0.2);
+    font-size: 45px;
+    font-weight: 800;
+    margin-left: 10%;
+    padding-bottom: 20px;
+    padding-left: 30px;
+    padding-right: 30px;
+    align-self: center;
+}
+
+.sub{
+    font-weight: 500;
+    margin-top: -10%;
+    font-size: 20px;
+}
+
+.friend-reviews-container{
+    display: flex;
+    overflow-x: auto;
+    margin: 0;
+    padding: 2%;
+    justify-content: space-between;
+}
+
+.friend-reviews-container>i{
+    align-self: center;
+    font-size: 40px;
+}
+
+.review-ratings-container {
+    display: flex;
+    align-items: center;
+    justify-content: right;
+    width: 20%;
+    height: 50%;
+    margin-right: 20px;
+}
+
+.review-ratings{
+    font-size: 25px;
+    font-weight: bold;
+    margin-right: 5px;
+    color: white;
+}
+
+.review-ratings, #reviewstar{
+    color: #FFD700;
+}
+
+.overflow{
+    flex: 0 0 600px;
+}
+
+.view-more{
+    display: flex;
+    justify-content: space-between;
+    margin-top: 3%;
+    margin-bottom: -0.5%;
+}
+
+.view-more>a{ 
+    align-self: flex-start;
+    padding-left: 1%;
+    padding-bottom: 10px;
+}
+
+.view-more>p{
+    text-align: right;
+    margin-top: 0;
+    padding-right: 1%;
+}
+
+.trending-spots-container{
+    margin-top: 1%;
+}
+
+.trending-spots-list{
+    overflow-x: auto;
+    display: flex;
+    flex-wrap: nowrap;
+}
+
+.edit-widget-container {
+    position: absolute;
+    z-index: 1000; 
+    justify-content: center; 
+    align-items: center; 
+    height: fit-content;
+    overflow-y: auto;
+    top: 2%; 
+    left: 50%;
+    transform: translateX(-50%);
+}
+
+.establishment-submit{
+    margin-top: 10px;
+    margin-left: auto; 
+    margin-right: 10px;
+    align-self: flex-end;
+    width: 40%;
+    border: 2px solid #523D35;
+    border-radius: 15px;
+    background-color: #F5F5F5;
+    color: #523D35;
+    font-family: 'Biryani', sans-serif;
+    font-size: 12px;
+    font-weight: bolder;
+}

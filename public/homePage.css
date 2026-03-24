@@ -1,0 +1,273 @@
+.serif {
+    font-family: 'Cardo', serif;
+    font-weight: 700;
+}
+
+.underline{
+    text-decoration: underline;
+}
+
+.white {
+    color: white;
+}
+
+.green {
+    color:#223030;
+}
+
+.brown {
+    color:#523D35;
+}
+
+.sans-serif {
+    font-family: 'Biryani', sans-serif;
+}
+
+.bold{
+    font-weight: bold;
+}
+
+.italic{
+    font-style: italic;
+}
+
+body {
+    background-color: #F5F5F5;
+}
+
+.banner-block{
+    display: flex;
+    background-image: url(https://miro.medium.com/v2/resize:fit:1400/0*6lX9i2AVnurxCQgx);
+    height:400px;
+    background-position: center;
+    background-repeat: no-repeat;
+    background-size: cover;
+    position: relative;
+}
+
+.banner-text-box{
+    background-color:rgba(255,255,255, 0.6);
+    text-align: center;
+    width:42%;
+    height:56%;
+    margin-top: 5%;
+    margin-left: 1%;
+}    
+
+.headline{
+    padding-left: 5%;
+    font-family: 'Cardo', serif;
+    font-size: 29px;
+    font-weight: 700;
+    text-align: left;
+}
+
+.body{
+    margin-top: -20px;
+    padding-left: 5%;
+    padding-right: 9%;
+    font-size: 12px;
+    font-weight: 700;
+    font-family: 'Biryani', 'sans-serif';
+    color: #523D35;
+    text-align: left;
+}
+
+.join-button{
+    font-family: 'Biryani', 'sans-serif';
+    font-size:13px;
+    font-weight: 900;
+    color:white;
+    background-color:#523D35;
+    padding:3px 20px 1px;
+    border-radius:10px;
+    text-align: right;
+}
+
+.functionalities-block{
+    height: 20%;
+    padding-top: 30px;
+    text-align: center;
+    font-family: 'Biryani', 'sans-serif';
+    color:#523D35;
+    font-weight: 900;
+    font-size: 30px;
+    margin-bottom: 10px;
+    display: flex;
+    flex-direction: column;
+}
+
+.functionalities-list{
+    display:flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.functionalities{
+    margin:0;
+    width: 20%;
+    height: 200px;
+    background-color: #223030;
+    border: 1px solid black;
+    color:white;
+    font-size: 20px;
+    font-weight:600;
+    margin: 3%;
+    padding-top:20px;
+    padding-left: 20px;
+    padding-right: 20px;
+    box-shadow: 5px 5px 10px rgba(0, 0, 0, 0.5);
+}
+
+.functionalities>i{
+    font-size: 40px;
+}
+
+.rate{
+    padding-bottom: 30px;
+}
+
+.recent-activity-block{
+    display: flex;
+    flex-direction: column;
+}
+
+.recent-activity-block-text{
+    padding-top: 2%;
+    text-align: center;
+    font-family: 'Cardo', serif;
+    color:#523D35;
+    font-weight: 900;
+    font-size: 30px;
+}
+
+hr{
+    width: 98%;
+    margin:auto;
+}
+
+.brewing{
+    text-align: center;
+    padding: 20px;
+    font-size: 18px;
+    font-style: italic;
+}
+
+.recent-reviews-container{
+    display: flex;
+    overflow-x: auto;
+    margin: 0;
+    padding: 2%;
+    justify-content: space-between;
+}
+
+.recent-reviews-container>i{
+    align-self: center;
+    font-size: 40px;
+}
+
+.recent-activity-list{
+    display: flex;
+    overflow-x: auto;
+    margin: 0;
+    padding: 2%;
+    justify-content: space-between;
+}
+
+.review {
+    display: flex;
+    flex-direction: column;
+    box-shadow: 5px 5px 10px rgba(0, 0, 0, 0.5);
+    border-radius: 5px;
+    margin-bottom: 20px;
+    width: 40%;
+    margin-right: 20px;
+}
+
+.review-image-caption-container{
+    padding: 2%;
+    display:flex;
+}
+
+.place-name{
+    font-family:'Biryani', 'sans-serif';
+    margin-top: 10px;
+    margin-bottom: -10px;
+    font-size: 30px;
+    font-weight: 700;
+}
+
+.caption{
+    font-family:'Biryani', 'sans-serif';
+    font-weight: 500;
+}
+
+.date-posted{
+    font-family:'Biryani', 'sans-serif';
+    font-style: italic;
+    color:darkgray;
+    align-self: flex-end;
+
+}
+
+.user-profile {
+    display: flex;
+    align-items: center; 
+    justify-content: space-between;
+    background-color: #BBA58E;
+    padding-left: 2%;
+}
+
+.user-profile >p{
+    font-size: 30px;
+    padding-right: 2%;
+    color: white;
+    text-align: right;
+
+}
+
+.user-profile img {
+    width: 75px;
+    height: 60px;
+    margin: 4%;
+    overflow: hidden;
+    border: 2px solid #F5F5F5;
+    border-radius: 50%;
+    margin-right: 10px;
+}
+
+.profile-text{
+    width: 70%;
+}
+
+.display-name {
+    font-weight: bold;
+    font-family: 'Biryani', sans-serif;
+    color: white;
+}
+
+.username {
+    font-family: 'Biryani', sans-serif;
+    font-size: small;
+    color: white;
+}
+
+.profile-image-username-container{
+    display: flex;
+    align-items: center;
+}
+
+.review-photo-box {
+    border: 2px solid white;
+    max-width: 200px;
+    max-height: 250px;  
+    border-radius: 5px; 
+    overflow: hidden; 
+    margin-right: 10px; 
+}
+
+.review-photo {
+    width: 100%; 
+    height: auto; 
+    object-position: bottom bottom;
+} 

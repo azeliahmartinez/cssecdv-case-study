@@ -1,0 +1,361 @@
+<!-- container for the header -->
+<div class="parent-header">
+    {{#if isLoggedIn}}
+        {{#if isOwner}}
+            {{> headerOwner}}
+        {{else if isRater}}
+            {{> headerUser}}
+        {{else}}
+            {{> headerNonUser}}
+        {{/if}}
+    {{else}}
+        {{> headerNonUser}}
+    {{/if}}
+</div>
+
+
+<!-- container for the content -->
+<div class="parent-content">
+         
+    <!-- container for the top banner of the establishment -->
+    <div class="parent-row blockA">
+
+        <!--Establishment header photo-->
+        <div class="establishment-main-photo">
+            <img src={{establishment.banner_image}} alt="establishment banner">
+        </div>
+
+        <!--Establishment box that contains basic info (name, overall rating, location)-->
+        <div class="establishment-text-box">
+
+            <div class="establishment-name"><b>{{establishment.establishment_name}}</b></div>
+
+            <div class="star-rating-container" data-rating="{{ establishmentRating }}">
+                <div class="star-rating"></div>
+                <span class="average">{{establishment.establishment_ratings}} ({{ reviewCount }} reviews) </span>
+            </div>
+
+            <div class="location">
+                <span class="fa fa-map-marker"></span>{{establishment.establishment_address}} <br>
+            </div>
+
+        </div>
+    </div>
+
+    <!-- main area of the establishment page -->
+    <div class="parent-row main-area">
+
+        <div class="left-side">
+            <section>
+                
+                <!--buttons row-->
+                <div class="navigate-container">
+                    <button class="favorite" data-establishment_name="{{establishment.establishment_name}}">
+                        <i class="fa fa-bookmark" aria-hidden="true"></i> Favorite
+                    </button>
+
+                    <div class="share-dropdown">
+                        <button class="reaction-btn share"><i class="fa fa-share-square-o" aria-hidden="true"></i>Share</button>
+                        <div class="share-dropdown-content">
+                            <a href="#"><i class="fa fa-facebook"></i> Facebook</a>
+                            <a href="#"><i class="fa fa-instagram"></i> Instagram</a>
+                            <a href="#"><i class="fa fa-twitter"></i> Twitter</a>
+                            <a href="#"><i class="fa fa-tiktok"></i> TikTok</a>
+                            <a href="#"><i class="fa fa-envelope"></i> Email</a>
+                            <a href="#"><i class="fa fa-link"></i> Copy Link</a>
+                        </div>
+                    </div>
+                </div>        
+        
+                <!-- write a review section -->
+                {{#if isLoggedIn}}
+                <div class="write-review">
+                    <div class="write-review-container">
+                        <!-- user icon -->
+                        <div class="user-profile-establishment">
+                            <img src="{{currentUserIcon}}" alt="user">
+                        </div> 
+
+                        <form name="post-form" method="post" id="post-form" enctype="multipart/form-data">
+                            <!-- star rating -->
+                            <div class="write-review-rating">
+                                <div class="review-rating">
+                                    <span class="fa fa-star" data-rating="1"></span>
+                                    <span class="fa fa-star" data-rating="2"></span>
+                                    <span class="fa fa-star" data-rating="3"></span>
+                                    <span class="fa fa-star" data-rating="4"></span>
+                                    <span class="fa fa-star" data-rating="5"></span>
+                                </div>
+                            </div>
+                            
+                            <!-- review location, title & description -->
+                            <input type="text" name="place_name" class="review-location" id="review-location" value="{{establishment.establishment_name}}" hidden>
+                            <input type="text" name="review_title" class="review-title" id="review-title" placeholder="Enter your review title" required>
+                            <input type="text" name="caption" class="review-description" id="review-description" placeholder="Sip, Snap, Share your Coffee Story!" oninput="autoExpand(this)"></input>
+
+                            <hr class="write-review-hr">
+                            
+                            <!-- photo upload and date -->
+                            <div class="photo-upload-date">
+                                <!-- photo upload -->
+                                <div class="photo-upload-container">
+                                    <input type="file" accept="image/*" id="photo-upload" class="photo-upload" name="review_photo" onchange="previewPhoto(event)">
+                                    <label for="photo-upload" class="photo-upload-label">
+                                        <i class="fa fa-camera"></i> Upload Photo
+                                    </label>
+                                </div>
+                                <div class="photo-preview" id="photo-preview"></div>
+
+                                <!-- date -->
+                                <div class="date-and-submit">
+                                    <input type="datetime-local" id="post-date" readonly>                                    
+                                </div>
+                    
+                                <!-- submit button -->
+                                <input type="button" onclick="submitReview()" class="post-review-button" value="Post Review"></input>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+                {{/if}}
+
+            <!-- reviews (overview of ratings) -->
+            <div class="reviews">
+
+                <div class="reviews-header"><b>Reviews</b></div>
+
+                <!-- establishment rating, review count & progress bar -->
+                <div class="review-section">
+                    
+                    <div class="star-rating-container" data-rating="{{ establishmentRating }}">
+                        <div class="star-rating"></div>
+                        <span class="average">{{establishment.establishment_ratings}} ({{ reviewCount }} reviews) </span>
+                    </div>
+                    
+                    <hr>
+
+                    <div class="progress-bars" id="progressBars" data-rating-distribution="{{ ratingDistribution }}" data-review-count="{{ reviewCount }}"> </div>
+
+                    <hr>
+                
+                </div>
+                
+                <!-- timeline of reviews -->
+                <div class="timeline">
+                    <div class="feed-header"><b>Let's see what our Brew Buddies have to say!</b></div>
+
+                    <!-- filter options -->
+                    <div class="filter-sort-options">
+
+                        <!-- Filter by Number of Stars -->
+                        <div class="star-filter">
+                            <label for="star-filter">Filter by Stars:</label>
+                        </br>
+                            <span class="rating-option" onclick="applyRatingFilter(1)">1</span>
+                            <span class="rating-option" onclick="applyRatingFilter(2)">2</span>
+                            <span class="rating-option" onclick="applyRatingFilter(3)">3</span>
+                            <span class="rating-option" onclick="applyRatingFilter(4)">4</span>
+                            <span class="rating-option" onclick="applyRatingFilter(5)">5</span>
+                        </div>
+
+                    </div>
+                
+                    <!-- success! review is reviewing boogsh wah!!!-->
+                    <!-- Call review partial to display review data -->
+                    <div class="review-feed">
+                        {{#if reviewData.length}}
+                            {{#each reviewData}}
+                                {{> review_partial currentUser=../currentUser isLoggedIn=../isLoggedIn currentUserIcon=../currentUserIcon}}
+                            {{/each}}
+                        {{else}}
+                            <p>Our brew buddies are still brewing up something to say.</p>
+                        {{/if}}
+                    </div>
+
+
+                </div>
+            </div>
+            </section>
+        </div>
+                
+        <div class="right-side">
+            <section>
+                    
+                <div class="about-edit-container">
+                
+                    <!-- about the establishment-->
+                    <div class="about-section">
+                        <span class="fa fa-info-circle"></span>
+                        <a class="about-header"><b>About</b></a>
+                        <div class="introduction">{{establishment.establishment_description}}</div>
+                    </div>
+                
+                    <!-- trying to display to establishment owner only -->
+                    {{#if isOwner}}
+                    {{#if (eq currentUser establishment.owner_username)}}
+                        <div class="edit-establishment">
+                            <button class="reaction-btn establishment-option" onclick="showEditWidget()">
+                                <i class="fa fa-pencil" aria-hidden="true"></i>
+                            </button>
+                        </div>
+
+                        <!-- edit establishment widget -->
+                        <!-- displaying but not yet fully functioning -->
+                        <div id="edit-widget" class="edit-widget-container">
+                            <div class="edit-establishmentwidget">
+                                <button class="close-button" onclick="hideEditWidget()">X</button>
+                                 <form id="edit-establishment-form" onsubmit="editEstablishment('{{establishment._id}}')">
+                                <p class="main"><b>Edit Establishment Details</b></p>
+                                <div class="info-item">
+                                    <label for="establishment_name">Name</label>
+                                    <input type="text" id="establishment_name" value="{{establishment.establishment_name}}" placeholder="Update establishment name">
+                                </div>
+                                <div class="info-item">
+                                    <label for="address">Address</label>
+                                    <input type="text" id="establishment_address" value="{{establishment.establishment_address}}" placeholder="Update establishment address">
+                                </div>
+                                <div class="info-item">
+                                    <label for="biotext">About the Establishment</label>
+                                    <input type="text" id="establishment_description" value="{{establishment.establishment_description}}"  placeholder="Update establishment description">
+                                </div>
+                                <div class="establishment-options">
+                                    <input id="save-details" type="submit" value="Save"></input>
+                                </div>
+                            </form>
+                            </div>
+                        </div>
+                    {{/if}}
+                    {{/if}}
+
+                </div>
+            
+                <!-- services offered -->
+                <div class="services-section">
+                    <hr class="hr1">
+                    <span class="fa fa-coffee"></span>
+                    <a class="services-header"><b>Services Offered</b></a>
+
+                    <!-- services list-->
+                    <div class="services-list">
+                        {{#each establishment.services_offered}}
+                            <span class="fa fa-check"></span> {{this}} <br>
+                        {{/each}}
+                    </div>
+
+                    <!-- price range -->
+                    <div class="price-range-section">
+                        <hr class="hr1">
+                        <span class="fa fa-money"></span>
+                        <a class="price-range-header"><b>Price Range</b></a>
+                        <div class="price-range">{{establishment.price_range}} </div>
+                    </div>
+
+                    <!-- schedule of establishment -->
+                    <div class="schedule-section">
+                        <hr class="hr1">
+                        <span class="fa fa-clock-o"></span>
+                        <a class="schedule-header"><b>Store Hours</b></a>
+
+                        <div class="row-schedule">
+
+                            <div class="column-weekdays">
+                                <b>
+                                    Monday<br>
+                                    Tuesday<br>
+                                    Wednesday<br>
+                                    Thursday<br>
+                                    Friday<br>
+                                    Saturday<br>
+                                    Sunday<br>
+                                </b>
+                            </div>
+
+                            <div class="column-schedule">
+                                {{#each establishment.establishment_schedule}}
+                                    {{this}}<br>
+                                {{/each}}
+                            </div>
+
+                        </div>
+                    </div>
+
+                    <!-- contact details -->
+                    <div class="contact-details-section">
+
+                        <hr class="hr1">
+
+                        <span class="fa fa-phone"></span>
+                        <a class="contact-header"><b>Contact Us!</b></a>
+                        
+                        <div class="facebook-page">
+                            <span class="fa fa-facebook-square"></span>
+                            {{establishment.contact_details_FB}} <br>
+                        </div>
+
+                        <div class="instagram-page">
+                            <span class="fa fa-instagram"></span>
+                            {{establishment.contact_details_IG}}
+                        </div>
+
+                    </div>
+
+                    <!-- other photos -->
+                    <div class="establishment-photos">
+                    
+                        <hr class="hr1">
+
+                        <span class="fa fa-camera"></span>
+                        <a class="header-text-photogrid"><b>More Photos</b></a>
+
+                        <!-- photo grid -->
+                        <div class="photo-grid">
+                            <div class="row">
+                                {{#each establishment.establishment_images}}
+                                <div class="column">
+                                    <img src="{{this}}" alt="Establishment Image">
+                                </div>
+                                {{/each}}
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- location map -->
+                    <div class="location-map-section">
+                    
+                        <hr class="hr1">
+
+                        <span class="fa fa-map-marker"></span>
+                        <a class="location-map-header"><b>Locate on the Map</b></a>
+                        
+                        <p class="address">{{establishment.establishment_address}}</p>
+
+                        <div class="map">
+                            <iframe id="establishment-map" src={{establishment.establishment_map}}></iframe>
+                        </div>
+                    </div>
+
+                    <!-- owner information -->
+                    <div class="owner-section">
+                        
+                        <hr class="hr1">
+
+                        <span class="fa fa-user"></span>
+                        <a class="user-header"><b>Owner of the Establishment</b></a>
+
+                        <p class="owner"> {{establishment.establishment_owner}}</p>
+
+                    </div>
+
+                </div>
+
+            </section>   
+        </div>
+
+    </div>
+
+</div>
+
+<!-- container for the footer -->
+<div class="parent-footer">
+{{> footer}}
+</div>

@@ -1,0 +1,63 @@
+<div class="header-item">
+    <header>
+        <div class="header-container">
+            <!-- Left side of the header-->
+            <div class="header-left">
+                <!--LOGO-->
+                <div class="header-logo">
+                    <a href="/landingPage"><img id="logo" src="https://i.imgocean.com/cofeed-3888275e2301b4b27.png" alt="cofeed-3888275e2301b4b27.png"/></a>
+                </div>
+    
+                <!--SEARCH BAR-->
+                <form action="/search" method="GET">
+                    <div class="header-search">
+                        <input class="search-bar" type="text" name="key" placeholder="Coffee shop, study area, etc...">
+                        <button class="search-button" type="submit"><i class="fa fa-search"></i></button>
+                    </div>
+                </form>
+
+            </div>
+
+            <div class="header-right">
+                
+                <!--HOME BUTTON-->
+                <div class="header-button-home">
+                    <a class="header-text" href="/landingPage">Home</a>
+                </div>
+
+                <!--VIEW ESTABLISHMENTS BUTTON-->
+                <div class="header-button-view-establishments">
+                    <a class="header-text" href="/viewEstablishments">View Establishments</a>
+                </div>
+
+                <!--CREATE ESTABLISHMENTS BUTTON-->
+                <div class="header-button">
+                    <a class="header-text" onclick="showEstablishmentWidget()">Create Establishment</a>
+                </div>
+
+                <!-- following and followers -->
+                {{> widgetEstablishment}}
+    
+                <!--SEE PROFILE PAGE
+                <div class="header-see-profile-button">
+                    <a class="header-text" onclick="redirectToProfile('{{currentUser}}')">See Profile</a>
+                </div>
+                -->
+        
+                <div class="header-profile">
+                    <div class="avatar-button" onclick="toggleOptions(event)">
+                        <div class="box-item">
+                         <a class="header-text"  onclick="redirectToProfile('{{currentUser}}')"></strong>{{currentUser}}</strong></a>
+                            <img src="{{currentUserIcon}}" alt="user icon">
+                        </div>
+                        <i class="fa fa-chevron-down"></i> 
+                    </div>
+                    <div class="avatar-dropdown-content" id="myDropdown">
+                        <button onclick="logout()">Logout</button>
+                    </div>
+                </div>
+        
+            </div>
+        </div>
+    </header>
+</div>

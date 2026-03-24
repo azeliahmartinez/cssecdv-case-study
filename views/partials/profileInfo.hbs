@@ -1,0 +1,17 @@
+<div class="parent-row blockb">
+    <div class="box-parent">
+        <div class="box-item-profile">
+            <img src="{{user-data.user_icon}}">  
+            <div>
+                <b>{{user-data.name}}</b><br>
+                <span class="bio-text">@{{user-data.username}}</span><br>
+                {{#if user-data.bio}}
+                    <span class="bio-text">{{user-data.bio}}</span><br>
+                {{/if}}
+
+                <div class="profile-stats">
+                    <a  id="reviews-count" onclick="showListReview()">{{user-data.createdreview.length}} reviews</a>
+                    <a  id="followers-count" onclick="showFollowers()">{{user-data.followers.length}} followers</a>
+                    <a  id="following-count" onclick="showFollowing()">{{user-data.following.length}} following</a>
+                </div> 
+                

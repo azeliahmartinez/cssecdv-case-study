@@ -1,0 +1,64 @@
+<!-- Create Establishment Widget -->
+<div id="create-establishment-widget" class="edit-widget-container">
+    <p class="main"><b>Create Establishment</b></p>
+    <button class="close-button" onclick="hideEdtablishmentWidget()">X</button>
+    <form name="create-establishment" action="/create-establishment" method="post" onsubmit="return createEstablishment(event)">
+        <div class="info-item">
+            <label for="establishment-name">Establishment Name</label>
+            <input type="text" id="establishment-name-field" placeholder="Enter establishment name">
+        </div>
+        <div class="info-item">
+            <label for="establishment-address">Establishment Address</label>
+            <input type="text" id="establishment-address-field" placeholder="Enter establishment address">
+        </div>
+        <div class="info-item">
+            <label for="establishment-description">Establishment Description</label>
+            <input type="text" id="establishment-description-field" placeholder="Enter establishment description">
+        </div>
+        <div class="info-item">
+            <label for="price-range">Price Range</label>
+            <input type="text" id="price-range-field" placeholder="Enter price range">
+        </div>
+        <div class="info-item">
+            <label for="banner-image">Banner Image URL</label>
+            <input type="text" id="banner-image-field" placeholder="Enter banner image URL">
+        </div>
+        <div class="info-item">
+            <label for="establishment-ratings">Establishment Ratings</label>
+            <input type="number" id="establishment-ratings-field" placeholder="Enter establishment ratings">
+        </div>
+        <div class="info-item">
+            <label for="services-offered">Services Offered (comma-separated)</label>
+            <input type="text" id="services-offered-field" placeholder="Enter services offered">
+        </div>
+        <div class="info-item">
+            <label for="establishment-schedule">Establishment Schedule (comma-separated)</label>
+            <input type="text" id="establishment-schedule-field" placeholder="Enter establishment schedule">
+        </div>
+        <div class="info-item">
+            <label for="contact-details-fb">Contact Details (Facebook)</label>
+            <input type="text" id="contact-details-fb-field" placeholder="Enter Facebook contact details">
+        </div>
+        <div class="info-item">
+            <label for="contact-details-ig">Contact Details (Instagram)</label>
+            <input type="text" id="contact-details-ig-field" placeholder="Enter Instagram contact details">
+        </div>
+        <div class="info-item">
+            <label for="establishment-images">Establishment Images (comma-separated)</label>
+            <input type="text" id="establishment-images-field" placeholder="Enter establishment images">
+        </div>
+        <div class="info-item">
+            <label for="establishment-map">Establishment Map URL</label>
+            <input type="text" id="establishment-map-field" placeholder="Enter establishment map URL">
+        </div>
+        <div class="info-item">
+            <label for="establishment-owner">Establishment Owner</label>
+            <input type="text" id="establishment-owner-field" placeholder="Enter establishment owner">
+        </div>
+        <div class="info-item">
+            <label for="owner-username">Owner Username</label>
+            <input type="text" id="owner-username-field" placeholder="Enter owner username">
+        </div>
+        <input id="create-establishment-button" type="submit" class="establishment-submit"value="Create Establishment"></input>
+</form>
+</div>
