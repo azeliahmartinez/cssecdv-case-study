@@ -82,8 +82,7 @@ server.use(express.static('public'));
 
 // mongoose
 const mongoose = require('mongoose');
-const mongoURI = process.env.MONGODB_URI;
-mongoose.connect(mongoURI);
+mongoose.connect("mongodb://127.0.0.1:27017/cssecdv");
 
 mongoose.connection.on('connected', () => {
   console.log('\nDatabase connected successfully\n');
