@@ -10,9 +10,3 @@ Web application for rating and reviewing coffee shops, cafes, and other co-worki
 - userData.json
 - establishmentData.json
 - reviewData.json
-
-## Members:
-- Caparos, Miguel
-- Martinez, Azeliah
-- Villanueva, Keisha
-- Wong, Abigail
