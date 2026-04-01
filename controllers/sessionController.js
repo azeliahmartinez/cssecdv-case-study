@@ -3,43 +3,44 @@ const express = require('express');
 
 const server = express();
 
+// ✅ Session setup (SAFE)
 server.use(session({
-    secret: 'private_key', 
-    // prevents session data from being saved on every request
+    secret: 'private_key',
     resave: false,
-    saveUninitialized: true
+    saveUninitialized: false // 🔥 important fix
 }));
 
-/// Middleware to set isLoggedIn, isOwner, and isRater based on session
+// ✅ SAFE middleware (no more crash)
 server.use(function(req, res, next) {
-    if (req.session.username) {
-        // User is logged in
+
+    // 🔥 ALWAYS ensure session exists
+    const userSession = req.session || {};
+
+    if (userSession.username) {
         res.locals.isLoggedIn = true;
         res.locals.isLoggedOut = false;
 
-        // Check if user is an owner or a rater
-        if (req.session.userType === 'owner') {
+        if (userSession.userType === 'owner') {
             res.locals.isOwner = true;
             res.locals.isRater = false;
-        } else if (req.session.userType === 'rater') {
+        } 
+        else if (userSession.userType === 'rater') {
             res.locals.isOwner = false;
             res.locals.isRater = true;
-        } else {
-            // If userType is neither 'owner' nor 'rater', set both to false
+        } 
+        else {
             res.locals.isOwner = false;
             res.locals.isRater = false;
         }
+
     } else {
-        // User is NOT logged in
         res.locals.isLoggedIn = false;
         res.locals.isLoggedOut = true;
         res.locals.isOwner = false;
         res.locals.isRater = false;
     }
+
     next();
 });
-
-  
-
 
 module.exports = server;

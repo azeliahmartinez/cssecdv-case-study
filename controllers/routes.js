@@ -437,24 +437,23 @@ function addRoutes(server) {
   // route for view establishments
   router.get('/viewEstablishments', function(req, resp){
     console.log('\nCurrently at View Establishments Page');
-    const searchQuery = {};
-    let headlineLocation = 'List of Establishments';
 
-    establishmentModel.find(searchQuery).lean().then(function(establishment_data){
-      establishment_data.forEach(function(establishment) {
-        establishment.isMetro = establishment.establishment_address.includes('Metro Manila');
-      });
+    establishmentModel.find({}).lean().then(function(establishment_data){
 
       resp.render('viewEstablishments', {
         layout: 'index',
         title: 'Cofeed',
         establishment: establishment_data,
-        headlineLocation: headlineLocation,
+        headlineLocation: 'List of Establishments',
         currentUser: req.session.username,
         currentUserIcon: req.session.user_icon
       });
+
+    }).catch(err => {
+      console.error(err);
+      resp.status(500).send("Error loading establishments");
     });
-  }); 
+  });
 
   // route for view establishments with filters
   router.post('/viewEstablishments', function(req, resp){
@@ -558,22 +557,20 @@ function addRoutes(server) {
   });
 
   // Route to create establishment (not fully functioning)
-  router.post('/create-establishment', (req, res) => {
+router.post('/create-establishment', isOwner, (req, res) => {
+  try {
     const {
       banner_image,
       establishment_name,
       establishment_address,
       establishment_description,
       price_range,
-      establishment_ratings,
       services_offered,
       establishment_schedule,
       contact_details_FB,
       contact_details_IG,
       establishment_images,
-      establishment_map,
-      establishment_owner,
-      owner_username,
+      establishment_map
     } = req.body;
 
     const newEstablishment = new establishmentModel({
@@ -582,27 +579,81 @@ function addRoutes(server) {
       establishment_address,
       establishment_description,
       price_range,
-      establishment_ratings,
-      services_offered: services_offered.split(','), // If they are comma-separated in the form
-      establishment_schedule: establishment_schedule.split(','),
+      establishment_ratings: 0,
+
+      // ✅ FIXED (no more crash)
+      services_offered: Array.isArray(services_offered)
+        ? services_offered
+        : services_offered ? services_offered.split(',') : [],
+
+      establishment_schedule: Array.isArray(establishment_schedule)
+        ? establishment_schedule
+        : establishment_schedule ? establishment_schedule.split(',') : [],
+
+      establishment_images: Array.isArray(establishment_images)
+        ? establishment_images
+        : establishment_images ? establishment_images.split(',') : [],
+
       contact_details_FB,
       contact_details_IG,
-      establishment_images: establishment_images.split(','),
       establishment_map,
-      establishment_owner,
-      owner_username,
+
+      // ✅ AUTO OWNER
+      establishment_owner: req.session.name,
+      owner_username: req.session.username
     });
 
     newEstablishment.save()
-      .then(establishment => {
-        const establishmentUrl = `/establishment/${encodeURIComponent(establishment.establishment_name)}`;
-        res.json({ success: true, message: 'Establishment created successfully!', establishmentId: establishment._id });
+      .then(est => {
+        res.json({
+          success: true,
+          message: 'Establishment created successfully!',
+          establishmentId: est._id
+        });
       })
-      .catch(error => {
-        console.error('Error creating establishment:', error);
-        res.status(500).json({ success: false, message: 'An error occurred while creating the establishment.' });
+      .catch(err => {
+        console.error(err);
+        res.status(500).json({ success: false });
       });
-  });
+
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ success: false });
+  }
+});
+
+router.get('/owner/establishments', isOwner, async (req, res) => {
+  try {
+    const establishments = await establishmentModel.find({
+      owner_username: req.session.username
+    }).lean();
+
+    res.render('ownerDashboard', {
+      layout: 'index',
+      establishments,
+      currentUser: req.session.username
+    });
+
+  } catch (err) {
+    console.error(err);
+    res.status(500).send('Error loading establishments');
+  }
+});
+
+async function checkOwnership(req, res, next) {
+  const est = await establishmentModel.findById(req.params.establishmentId);
+
+  if (!est) {
+    return res.status(404).json({ message: 'Not found' });
+  }
+
+  if (est.owner_username !== req.session.username) {
+    return res.status(403).json({ message: 'Unauthorized' });
+  }
+
+  next();
+}
+
     // read establishment
     router.get('/establishment/:name', function (req, resp) {
       const establishmentName = req.params.name;
@@ -645,6 +696,8 @@ function addRoutes(server) {
             currentUser: req.session.username,
             currentUserIcon: req.session.user_icon,
             currentUserType: req.session.userType,
+              // ✅ ADD THIS
+            isOwner: req.session.userType === 'owner',
             selectedRatingFilter: ratingFilter,
             establishmentRating: establishment_data.establishment_ratings,
             ratingDistribution: JSON.stringify(ratingDistribution)
@@ -655,49 +708,41 @@ function addRoutes(server) {
 
 
   // Route for editing establishment details
-  router.post('/edit-establishment/:establishmentId', (req, res) => {
-    const establishmentId = req.params.establishmentId;
-    const updatedEstablishmentName = req.body.establishment_name;
-    const updatedEstablishmentAddress = req.body.establishment_address;
-    const updatedEstablishmentDescription = req.body.establishment_description;
+router.post('/edit-establishment/:establishmentId',
+  isOwner,
+  checkOwnership,
+  async (req, res) => {
 
-    // Find the establishment by its ID and update its details
-    establishmentModel.findByIdAndUpdate(establishmentId, {
-      establishment_name: updatedEstablishmentName,
-      establishment_address: updatedEstablishmentAddress,
-      establishment_description: updatedEstablishmentDescription
-    }, { new: true })
-      .then(updatedEstablishment => {
-        if (!updatedEstablishment) {
-          return res.status(404).json({
-            success: false,
-            message: 'Establishment not found'
-          });
-        }
+  try {
+    const updated = await establishmentModel.findByIdAndUpdate(
+      req.params.establishmentId,
+      req.body,
+      { new: true }
+    );
 
-        console.log("\nEstablishment updated with establishment ID:", establishmentId);
-        
-        // Update the reviews with the new establishment name
-        return reviewModel.updateMany({ place_name: updatedEstablishment.establishment_name }, { $set: { place_name: updatedEstablishmentName } })
-          .then(() => {
-            res.json({ success: true });
-          })
-          .catch(error => {
-            console.error('Error updating reviews:', error);
-            res.status(500).json({
-              success: false,
-              message: 'Error updating reviews'
-            });
-          });
-      })
-      .catch(error => {
-        console.error('Error updating establishment:', error);
-        return res.status(500).json({
-          success: false,
-          message: 'Internal server error'
-        });
-      });
-  });
+    res.json({ success: true, updated });
+
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ success: false });
+  }
+});
+
+router.post('/delete-establishment/:establishmentId',
+  isOwner,
+  checkOwnership,
+  async (req, res) => {
+
+  try {
+    await establishmentModel.findByIdAndDelete(req.params.establishmentId);
+
+    res.json({ success: true });
+
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ success: false });
+  }
+});
 
 
   // AAAAAAA ESTAB SAVES TO FAVORITES !!!!!!! TIME CHECK 2:18AM

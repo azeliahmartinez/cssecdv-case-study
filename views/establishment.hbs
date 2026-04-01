@@ -197,6 +197,12 @@
                             <button class="reaction-btn establishment-option" onclick="showEditWidget()">
                                 <i class="fa fa-pencil" aria-hidden="true"></i>
                             </button>
+
+                             <!-- ✅ DELETE BUTTON -->
+                            <button class="reaction-btn establishment-option" onclick="deleteEstablishment('{{establishment._id}}')">
+                                <i class="fa fa-trash" aria-hidden="true"></i>
+                            </button>
+
                         </div>
 
                         <!-- edit establishment widget -->
@@ -204,7 +210,7 @@
                         <div id="edit-widget" class="edit-widget-container">
                             <div class="edit-establishmentwidget">
                                 <button class="close-button" onclick="hideEditWidget()">X</button>
-                                 <form id="edit-establishment-form" onsubmit="editEstablishment('{{establishment._id}}')">
+                                 <form id="edit-establishment-form" onsubmit="event.preventDefault(); editEstablishment('{{establishment._id}}')">
                                 <p class="main"><b>Edit Establishment Details</b></p>
                                 <div class="info-item">
                                     <label for="establishment_name">Name</label>

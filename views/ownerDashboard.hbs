@@ -1,0 +1,32 @@
+<div class="parent-header">
+    {{> headerOwner}}
+</div>
+
+<div class="parent-content">
+    <h1>Your Establishments</h1>
+
+    <div class="places">
+        {{#each establishments}}
+        <div class="establishment">
+            <img class="place-img" src={{banner_image}}>
+
+            <div class="info">
+                <h3>{{establishment_name}}</h3>
+                <p>{{establishment_address}}</p>
+
+                <button onclick="redirectToEstablishment('{{establishment_name}}')">
+                    View
+                </button>
+
+                <button onclick="editRedirect('{{_id}}')">
+                    Edit
+                </button>
+
+                <button onclick="deleteEstablishment('{{_id}}')">
+                    Delete
+                </button>
+            </div>
+        </div>
+        {{/each}}
+    </div>
+</div>
