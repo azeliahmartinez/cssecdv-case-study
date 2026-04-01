@@ -68,7 +68,7 @@
                 </div>        
         
                 <!-- write a review section -->
-                {{#if isLoggedIn}}
+                {{#if isRater}}
                 <div class="write-review">
                     <div class="write-review-container">
                         <!-- user icon -->
@@ -192,7 +192,6 @@
                 
                     <!-- trying to display to establishment owner only -->
                     {{#if isOwner}}
-                    {{#if (eq currentUser establishment.owner_username)}}
                         <div class="edit-establishment">
                             <button class="reaction-btn establishment-option" onclick="showEditWidget()">
                                 <i class="fa fa-pencil" aria-hidden="true"></i>
@@ -230,7 +229,6 @@
                             </form>
                             </div>
                         </div>
-                    {{/if}}
                     {{/if}}
 
                 </div>
