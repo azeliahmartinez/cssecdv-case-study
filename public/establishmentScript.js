@@ -502,3 +502,27 @@ function hideEstablishmentWidget() {
   var establishmentWidget = document.getElementById("create-establishment-widget");
   establishmentWidget.style.display = "none";
 }
+
+// 🗑 DELETE ESTABLISHMENT
+// =========================
+function deleteEstablishment(id) {
+  console.log("Deleting:", id); // 👈 debug
+
+  if (!confirm("Are you sure you want to delete this establishment?")) return;
+
+  fetch(`/delete-establishment/${id}`, {
+    method: "POST"
+  })
+  .then(response => response.json())
+  .then(data => {
+    if (data.success) {
+      alert("Deleted successfully!");
+      window.location.href = "/owner/establishments";
+    } else {
+      alert("Delete failed");
+    }
+  })
+  .catch(error => {
+    console.error("Delete error:", error);
+  });
+}
