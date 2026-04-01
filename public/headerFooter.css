@@ -7,35 +7,39 @@ a{
     flex-grow: 1;
  }
 
-.header-container{
+ .header-container{
     display:flex;
     background-color: #523D35;
     margin: 0;
     align-items: center;
+    height: 65px;           
+    padding: 0 20px;        
 }
 
 .header-left {
-    width:60%;
-    display:flex;
+    width: 60%;
+    display: flex;
     align-items: center;
+    gap: 15px;   /* cleaner spacing */
 }
 
-#logo{
-    width: 80%;
-    position:static;
-    margin-left: 5%;
-    padding: 2px;
+#logo {
+    height: 150px;   /* bigger but still fits inside 65px */
+    width: auto;
+    object-fit: contain;
 }
+
 
 .header-logo > img {
-    padding-top: 10px;
-    padding-left: 40px;
-    height: 50px;       
-    width: 200px;
+    height: 35px;
+    width: auto;
+    padding: 0;        /* REMOVE extra space */
 }
 
 .header-logo {
-    width: 30%;
+    display: flex;
+    align-items: center;
+    height: 100%;   /* fill header height */
 }
 
 .header-search {
