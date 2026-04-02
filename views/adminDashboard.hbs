@@ -19,7 +19,7 @@
                     <h2>Create Admin / Manager</h2>
                 </div>
 
-                <form class="admin-create-form" action="/admin/create-user" method="POST">
+                <form class="admin-create-form" id="admin-create-user-form" onsubmit="return submitAdminCreateUserForm()">
                     <div class="admin-form-grid">
                         <div class="admin-form-field">
                             <label>Name</label>
@@ -111,7 +111,7 @@
                                 {{#if (eq userType "rater")}}Customer{{/if}}
                             </td>
                             <td>
-                                <form class="admin-role-form" action="/admin/change-role" method="POST">
+                                <form class="admin-role-form" onsubmit="return submitAdminRoleForm(event, this)">
                                     <input type="hidden" name="userId" value="{{_id}}">
                                     <select name="newRole">
                                         <option value="admin" {{#if (eq userType "admin")}}selected{{/if}}>Administrator</option>
@@ -122,7 +122,7 @@
                                 </form>
                             </td>
                             <td>
-                                <form action="/admin/delete-user/{{_id}}" method="POST" onsubmit="return confirm('Delete this user?')">
+                                <form onsubmit="return submitAdminDeleteUserForm(event, this, '{{_id}}')">
                                     <button type="submit" class="owner-delete-btn owner-action-btn">Delete</button>
                                 </form>
                             </td>

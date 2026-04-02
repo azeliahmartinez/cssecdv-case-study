@@ -302,7 +302,9 @@ function addRoutes(server) {
             if (passwordMatch) {
               req.session.username = user.username;
               req.session.name = user.name;
-              req.session.user_icon = user.user_icon;
+              req.session.user_icon = user.userType === 'admin'
+                ? '/images/admin-icon.png'
+                : user.user_icon;
               req.session.userType = user.userType;
               if (rememberMe === 'on') {
                 req.session.cookie.maxAge = 1000 * 60 * 60 * 24 * 21; // sets expiry of user login (in seconds)
@@ -382,7 +384,9 @@ function addRoutes(server) {
             console.log("\nPassword updated successfully for user: ", updatedUser.username);
   
             req.session.username = updatedUser.username;
-            req.session.user_icon = updatedUser.user_icon;
+            req.session.user_icon = updatedUser.userType === 'admin'
+              ? '/images/admin-icon.png'
+              : updatedUser.user_icon;
             req.session.userType = updatedUser.userType;
             console.log("\nUser ", req.session.username, " Found");
             console.log("User Type:", req.session.userType);
@@ -451,7 +455,8 @@ function addRoutes(server) {
         establishment: establishment_data,
         headlineLocation: 'List of Establishments',
         currentUser: req.session.username,
-        currentUserIcon: req.session.user_icon
+        currentUserIcon: req.session.user_icon,
+        currentUserType: req.session.userType
       });
 
     }).catch(err => {
@@ -533,7 +538,8 @@ function addRoutes(server) {
         establishment: establishment_data,
         headlineLocation: headlineLocation,
         currentUser: req.session.username,
-        currentUserIcon: req.session.user_icon
+        currentUserIcon: req.session.user_icon,
+        currentUserType: req.session.userType
       });
     });  
   });
@@ -1044,6 +1050,10 @@ router.post('/delete-establishment/:establishmentId',
 
   // route for profile
   router.get('/profile/:name', function (req, resp) {
+    if (req.session.userType === 'admin') {
+      return resp.redirect('/admin/dashboard');
+    }
+
     const userName = req.params.name;
     const searchQuery = { username: userName };
     console.log('\nCurrently at Profile Page of ' + userName);

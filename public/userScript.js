@@ -152,7 +152,7 @@ function submitLoginForm() {
     })
     .then(data => {
         if (data && data.success) {
-            window.location.href = 'landingPage';
+            window.location.href = data.redirect || '/landingPage';
         } else {
             alert('username and password do not match');
         }
@@ -403,7 +403,89 @@ function removeReview(reviewPhoto) {
     }
 }
 
+// =========================
+// ADMIN DASHBOARD ACTIONS
+// =========================
 
+// create admin / manager account
+function submitAdminCreateUserForm() {
+    const form = document.getElementById('admin-create-user-form');
+    const formData = new FormData(form);
+
+    fetch('/admin/create-user', {
+        method: 'POST',
+        body: new URLSearchParams(formData)
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data && data.success) {
+            alert(data.message || 'User created successfully');
+            window.location.reload();
+        } else {
+            alert(data.message || 'Failed to create user');
+        }
+    })
+    .catch(error => {
+        console.error('Error creating admin/manager user:', error);
+        alert('An error occurred while creating the user.');
+    });
+
+    return false;
+}
+
+// change user role
+function submitAdminRoleForm(event, form) {
+    if (event) event.preventDefault();
+
+    const formData = new FormData(form);
+
+    fetch('/admin/change-role', {
+        method: 'POST',
+        body: new URLSearchParams(formData)
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data && data.success) {
+            alert(data.message || 'Role updated successfully');
+            window.location.reload();
+        } else {
+            alert(data.message || 'Failed to update role');
+        }
+    })
+    .catch(error => {
+        console.error('Error updating role:', error);
+        alert('An error occurred while updating the role.');
+    });
+
+    return false;
+}
+
+// delete user from admin access control table
+function submitAdminDeleteUserForm(event, form, userId) {
+    if (event) event.preventDefault();
+
+    const confirmed = confirm('Delete this user?');
+    if (!confirmed) return false;
+
+    fetch(`/admin/delete-user/${userId}`, {
+        method: 'POST'
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data && data.success) {
+            alert('User deleted successfully');
+            window.location.reload();
+        } else {
+            alert(data.message || 'Failed to delete user');
+        }
+    })
+    .catch(error => {
+        console.error('Error deleting user:', error);
+        alert('An error occurred while deleting the user.');
+    });
+
+    return false;
+}
 
 
 

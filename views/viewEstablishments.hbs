@@ -1,9 +1,11 @@
 <!-- container for the header -->
 <div class="parent-header">
-    {{#if isLoggedIn}}
-        {{#if isOwner}}
+    {{#if currentUser}}
+        {{#if (eq currentUserType "admin")}}
+            {{> headerAdmin}}
+        {{else if (eq currentUserType "owner")}}
             {{> headerOwner}}
-        {{else if isRater}}
+        {{else if (eq currentUserType "rater")}}
             {{> headerUser}}
         {{else}}
             {{> headerNonUser}}
