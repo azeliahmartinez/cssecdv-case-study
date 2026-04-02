@@ -2,31 +2,69 @@
     {{> headerOwner}}
 </div>
 
-<div class="parent-content">
-    <h1>Your Establishments</h1>
-
-    <div class="places">
-        {{#each establishments}}
-        <div class="establishment">
-            <img class="place-img" src={{banner_image}}>
-
-            <div class="info">
-                <h3>{{establishment_name}}</h3>
-                <p>{{establishment_address}}</p>
-
-                <button onclick="redirectToEstablishment('{{establishment_name}}')">
-                    View
-                </button>
-
-                <button onclick="editRedirect('{{_id}}')">
-                    Edit
-                </button>
-
-                <button onclick="deleteEstablishment('{{_id}}')">
-                    Delete
-                </button>
+<div class="owner-dashboard-page">
+    <div class="owner-dashboard-shell">
+        <div class="owner-dashboard-header">
+            <div>
+                <p class="owner-eyebrow">Manage</p>
+                <h1>Your Establishments</h1>
+                <p class="owner-subtext">View, edit, and manage all coffee shop listings you created.</p>
             </div>
         </div>
-        {{/each}}
+
+        <div class="owner-table-card">
+            <div class="owner-table-scroll">
+                <table class="owner-establishments-table">
+                    <thead>
+                        <tr>
+                            <th>Image</th>
+                            <th>Establishment</th>
+                            <th>Address</th>
+                            <th>Price Range</th>
+                            <th>Owner</th>
+                            <th>Visit Page</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {{#each establishments}}
+                        <tr>
+                            <td>
+                                <img
+                                    class="owner-table-image"
+                                    src="{{banner_image}}"
+                                    alt="{{establishment_name}}"
+                                    onerror="this.onerror=null;this.src='/images/establishment-fallback.png';"
+                                >
+                            </td>
+                            <td>
+                                <button class="owner-link-button" onclick="redirectToEstablishment('{{establishment_name}}')">
+                                    {{establishment_name}}
+                                </button>
+                            </td>
+                            <td>{{establishment_address}}</td>
+                            <td>{{price_range}}</td>
+                            <td>{{establishment_owner}}</td>
+                            <td>
+                                <button class="owner-visit-btn" onclick="redirectToEstablishment('{{establishment_name}}')">
+                                    Visit Page
+                                </button>
+                            </td>
+                            <td>
+                                <div class="owner-action-group">
+                                    <button class="owner-action-btn owner-edit-btn" onclick="redirectToEstablishment('{{establishment_name}}')">
+                                        Edit
+                                    </button>
+                                    <button class="owner-action-btn owner-delete-btn" onclick="deleteEstablishment('{{_id}}')">
+                                        Delete
+                                    </button>
+                                </div>
+                            </td>
+                        </tr>
+                        {{/each}}
+                    </tbody>
+                </table>
+            </div>
+        </div>
     </div>
 </div>

@@ -111,24 +111,24 @@ document.addEventListener("DOMContentLoaded", function() {
   function createEstablishment() {
     const form = document.getElementById('create-establishment-form');
     const formData = new FormData(form);
-    
+
     fetch('/create-establishment', {
       method: 'POST',
       body: new URLSearchParams(formData)
     })
     .then(response => response.json())
     .then(data => {
-      if(data.success) {
-        // Redirect to the new establishment page
-        window.location.href = data.redirect;
+      if (data.success) {
+        window.location.href = '/owner/establishments';
       } else {
-        alert(data.message);
+        alert(data.message || 'Failed to create establishment');
       }
     })
     .catch(error => {
       console.error('Error:', error);
+      alert('An error occurred while creating the establishment.');
     });
-    
+
     return false;
   }
   

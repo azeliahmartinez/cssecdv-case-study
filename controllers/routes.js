@@ -559,6 +559,8 @@ function addRoutes(server) {
   // Route to create establishment (not fully functioning)
 router.post('/create-establishment', isOwner, (req, res) => {
   try {
+    console.log("CREATE ESTABLISHMENT BODY:", req.body);
+
     const {
       banner_image,
       establishment_name,
@@ -573,6 +575,13 @@ router.post('/create-establishment', isOwner, (req, res) => {
       establishment_map
     } = req.body;
 
+    if (!establishment_name || !establishment_address) {
+      return res.status(400).json({
+        success: false,
+        message: 'Establishment name and address are required.'
+      });
+    }
+
     const newEstablishment = new establishmentModel({
       banner_image,
       establishment_name,
@@ -581,7 +590,7 @@ router.post('/create-establishment', isOwner, (req, res) => {
       price_range,
       establishment_ratings: 0,
 
-      // ✅ FIXED (no more crash)
+    
       services_offered: Array.isArray(services_offered)
         ? services_offered
         : services_offered ? services_offered.split(',') : [],
@@ -605,6 +614,8 @@ router.post('/create-establishment', isOwner, (req, res) => {
 
     newEstablishment.save()
       .then(est => {
+        console.log("CREATED ESTABLISHMENT:", est);
+
         res.json({
           success: true,
           message: 'Establishment created successfully!',

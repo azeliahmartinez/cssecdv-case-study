@@ -289,3 +289,186 @@ a{
     text-decoration: none;
     color: white;
 }
+
+.owner-dashboard-page {
+    background: #f6f2ec;
+    min-height: calc(100vh - 70px);
+    padding: 36px 40px 56px;
+}
+
+.owner-dashboard-shell {
+    max-width: 1380px;
+    margin: 0 auto;
+}
+
+.owner-dashboard-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-end;
+    margin-bottom: 24px;
+}
+
+.owner-dashboard-header h1 {
+    margin: 0;
+    color: #2f3b3b;
+    font-size: 3rem;
+    line-height: 1.05;
+    font-weight: 800;
+    letter-spacing: -0.03em;
+}
+
+.owner-eyebrow {
+    margin: 0 0 8px;
+    font-size: 0.85rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.12em;
+    color: #7a675d;
+}
+
+.owner-subtext {
+    margin: 10px 0 0;
+    color: #746862;
+    font-size: 1rem;
+    line-height: 1.6;
+}
+
+.owner-table-card {
+    background: #fffaf5;
+    border: 1px solid rgba(82, 61, 53, 0.08);
+    border-radius: 24px;
+    box-shadow: 0 16px 36px rgba(47, 59, 59, 0.08);
+    overflow: hidden;
+}
+
+.owner-table-scroll {
+    overflow-x: auto;
+}
+
+.owner-establishments-table {
+    width: 100%;
+    border-collapse: collapse;
+    min-width: 1100px;
+}
+
+.owner-establishments-table thead tr {
+    background: #f3ebe3;
+}
+
+.owner-establishments-table th {
+    text-align: left;
+    padding: 18px 20px;
+    font-size: 0.95rem;
+    font-weight: 700;
+    color: #523D35;
+    border-bottom: 1px solid rgba(82, 61, 53, 0.08);
+    white-space: nowrap;
+}
+
+.owner-establishments-table td {
+    padding: 18px 20px;
+    font-size: 0.96rem;
+    color: #4d4743;
+    border-bottom: 1px solid rgba(82, 61, 53, 0.08);
+    vertical-align: middle;
+    background: #fffaf5;
+}
+
+.owner-establishments-table tbody tr:hover td {
+    background: #fcf6f0;
+}
+
+.owner-table-image {
+    width: 68px;
+    height: 68px;
+    border-radius: 16px;
+    object-fit: cover;
+    display: block;
+    background: #e9e1d8;
+    border: 1px solid rgba(82, 61, 53, 0.08);
+}
+
+.owner-link-button {
+    background: none;
+    border: none;
+    padding: 0;
+    color: #2f3b3b;
+    font-size: 1rem;
+    font-weight: 700;
+    text-align: left;
+    cursor: pointer;
+    transition: color 0.2s ease;
+}
+
+.owner-link-button:hover {
+    color: #6a4b3f;
+}
+
+.owner-visit-btn {
+    background: #6a4b3f;
+    color: #fff;
+    border: 1px solid #6a4b3f;
+    border-radius: 14px;
+    padding: 10px 16px;
+    font-size: 0.9rem;
+    font-weight: 700;
+    cursor: pointer;
+    transition: 0.2s ease;
+    white-space: nowrap;
+}
+
+.owner-visit-btn:hover {
+    background: #fffaf5;
+    color: #6a4b3f;
+}
+
+.owner-action-group {
+    display: flex;
+    gap: 10px;
+    flex-wrap: wrap;
+}
+
+.owner-action-btn {
+    border-radius: 12px;
+    padding: 9px 14px;
+    font-size: 0.88rem;
+    font-weight: 700;
+    cursor: pointer;
+    transition: 0.2s ease;
+}
+
+.owner-edit-btn {
+    background: #2f3b3b;
+    color: #fff;
+    border: 1px solid #2f3b3b;
+}
+
+.owner-edit-btn:hover {
+    background: #fffaf5;
+    color: #2f3b3b;
+}
+
+.owner-delete-btn {
+    background: transparent;
+    color: #8b4f43;
+    border: 1px solid rgba(139, 79, 67, 0.35);
+}
+
+.owner-delete-btn:hover {
+    background: #fff0ec;
+    color: #7a3f34;
+}
+
+@media (max-width: 768px) {
+    .owner-dashboard-page {
+        padding: 24px 16px 40px;
+    }
+
+    .owner-dashboard-header h1 {
+        font-size: 2.2rem;
+    }
+
+    .owner-subtext {
+        font-size: 0.95rem;
+    }
+}
