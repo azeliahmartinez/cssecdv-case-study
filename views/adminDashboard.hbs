@@ -1,0 +1,153 @@
+<div class="parent-header">
+    {{> headerAdmin}}
+</div>
+
+<div class="owner-dashboard-page">
+    <div class="owner-dashboard-shell">
+        <div class="owner-dashboard-header">
+            <div>
+                <p class="owner-eyebrow">System Control</p>
+                <h1>Admin Dashboard</h1>
+                <p class="owner-subtext">Create administrator and manager accounts, assign roles, manage system access, and review activity.</p>
+            </div>
+        </div>
+
+        <div class="admin-dashboard-grid">
+            <div class="admin-panel-card">
+                <div class="admin-panel-header">
+                    <p class="owner-eyebrow">Users</p>
+                    <h2>Create Admin / Manager</h2>
+                </div>
+
+                <form class="admin-create-form" action="/admin/create-user" method="POST">
+                    <div class="admin-form-grid">
+                        <div class="admin-form-field">
+                            <label>Name</label>
+                            <input type="text" name="name" placeholder="Enter full name" required>
+                        </div>
+
+                        <div class="admin-form-field">
+                            <label>Username</label>
+                            <input type="text" name="username" placeholder="Enter username" required>
+                        </div>
+
+                        <div class="admin-form-field">
+                            <label>Email</label>
+                            <input type="email" name="email" placeholder="Enter email" required>
+                        </div>
+
+                        <div class="admin-form-field">
+                            <label>Password</label>
+                            <input type="password" name="password" placeholder="Enter password" required>
+                        </div>
+
+                        <div class="admin-form-field admin-form-field-full">
+                            <label>Role</label>
+                            <select name="userType" required>
+                                <option value="admin">Administrator</option>
+                                <option value="owner">Manager</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <button type="submit" class="owner-visit-btn">Create User</button>
+                </form>
+            </div>
+
+            <div class="admin-panel-card">
+                <div class="admin-panel-header">
+                    <p class="owner-eyebrow">Security</p>
+                    <h2>Admin Actions</h2>
+                </div>
+
+                <div class="admin-action-list">
+                    <a class="admin-action-tile" href="/forgotpassword">
+                        <span class="admin-action-title">Change Password</span>
+                        <span class="admin-action-subtext">Update your administrator password.</span>
+                    </a>
+
+                    <div class="admin-action-tile admin-action-tile-muted">
+                        <span class="admin-action-title">Audit Trails</span>
+                        <span class="admin-action-subtext">Frontend section ready. Connect backend audit-log route next.</span>
+                    </div>
+
+                    <a class="admin-action-tile" href="/owner/establishments">
+                        <span class="admin-action-title">Manage Establishments</span>
+                        <span class="admin-action-subtext">Open the shared management dashboard for coffee shop listings.</span>
+                    </a>
+                </div>
+            </div>
+        </div>
+
+        <div class="owner-table-card admin-users-table-card">
+            <div class="admin-panel-header admin-table-header">
+                <div>
+                    <p class="owner-eyebrow">Access Control</p>
+                    <h2>User Roles and System Access</h2>
+                </div>
+            </div>
+
+            <div class="owner-table-scroll">
+                <table class="owner-establishments-table admin-users-table">
+                    <thead>
+                        <tr>
+                            <th>User</th>
+                            <th>Name</th>
+                            <th>Email</th>
+                            <th>Current Role</th>
+                            <th>Change Role</th>
+                            <th>Remove</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {{#each users}}
+                        <tr>
+                            <td>{{username}}</td>
+                            <td>{{name}}</td>
+                            <td>{{email}}</td>
+                            <td>
+                                {{#if (eq userType "admin")}}Administrator{{/if}}
+                                {{#if (eq userType "owner")}}Manager{{/if}}
+                                {{#if (eq userType "rater")}}Customer{{/if}}
+                            </td>
+                            <td>
+                                <form class="admin-role-form" action="/admin/change-role" method="POST">
+                                    <input type="hidden" name="userId" value="{{_id}}">
+                                    <select name="newRole">
+                                        <option value="admin" {{#if (eq userType "admin")}}selected{{/if}}>Administrator</option>
+                                        <option value="owner" {{#if (eq userType "owner")}}selected{{/if}}>Manager</option>
+                                        <option value="rater" {{#if (eq userType "rater")}}selected{{/if}}>Customer</option>
+                                    </select>
+                                    <button type="submit" class="owner-edit-btn owner-action-btn">Save</button>
+                                </form>
+                            </td>
+                            <td>
+                                <form action="/admin/delete-user/{{_id}}" method="POST" onsubmit="return confirm('Delete this user?')">
+                                    <button type="submit" class="owner-delete-btn owner-action-btn">Delete</button>
+                                </form>
+                            </td>
+                        </tr>
+                        {{/each}}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <div class="owner-table-card admin-logs-card">
+            <div class="admin-panel-header admin-table-header">
+                <div>
+                    <p class="owner-eyebrow">Audit</p>
+                    <h2>Audit Trails</h2>
+                    <p class="owner-subtext">UI section prepared. Connect this to your backend audit log source when ready.</p>
+                </div>
+            </div>
+
+            <div class="admin-log-placeholder">
+                <div class="admin-log-item">
+                    <span class="admin-log-title">No audit trail data connected yet</span>
+                    <span class="admin-log-subtext">Add a backend route for logs, then render them in this section.</span>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

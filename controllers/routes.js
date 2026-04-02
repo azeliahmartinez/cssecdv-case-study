@@ -318,7 +318,11 @@ function addRoutes(server) {
               }
               console.log("\nUser ", req.session.username, " Found");
               console.log("User Type:", req.session.userType);
-              resp.json({ success: true });
+              if (user.userType === 'admin') {
+                resp.json({ success: true, redirect: '/admin/dashboard' });
+              } else {
+                resp.json({ success: true, redirect: '/landingPage' });
+              }
             } else {
               console.log("\nPasswords do not match for user: ", username);
               resp.json({ success: false });
@@ -665,12 +669,14 @@ router.get('/admin/dashboard',
       const users = await userModel.find().lean();
       const establishments = await establishmentModel.find().lean();
 
-      res.render('adminDashboard', {
-        layout: 'index',
-        users,
-        establishments,
-        currentUser: req.session.username
-      });
+    res.render('adminDashboard', {
+      layout: 'index',
+      users,
+      establishments,
+      currentUser: req.session.username,
+      currentUserIcon: req.session.user_icon,
+      currentUserType: req.session.userType
+    });
 
     } catch (err) {
       console.error(err);
