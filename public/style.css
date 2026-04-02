@@ -1,7 +1,10 @@
 body {
     margin: 0;
-    font-family: 'Biryani', sans-serif;
-    overflow: scroll;
+    font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+    overflow-x: hidden;
+    overflow-y: auto;
+    background: #f6f2ec;
+    color: #2f3b3b;
 }
 
 /* container for the body */

@@ -13,47 +13,62 @@
 
 /* style for main banner area */
 .blockA {
-    margin: 0;
     width: 100%;
     position: relative;
+    display: flex;
     justify-content: center;
-    align-items: center;
+    align-items: flex-end;
+    min-height: 360px;
+    margin-bottom: 28px;
+    overflow: hidden;
+}
+
+.establishment-main-photo {
+    width: 100%;
+    height: 360px;
+    position: relative;
 }
 
 .establishment-main-photo > img {
-    height:250px;
     width: 100%;
+    height: 100%;
     object-fit: cover;
-    object-position: 70% 70%;
+    object-position: center;
+    display: block;
+    filter: brightness(0.72);
 }
 
 .establishment-text-box {
     position: absolute;
-    bottom: 50%;
     left: 50%;
-    transform: translate(-50%, 100%);
-    background-color: white;
-    opacity: 75%;
-    width: 75%;
-    height: 50%;
+    bottom: 28px;
+    transform: translateX(-50%);
+    width: min(1240px, 92%);
+    background: rgba(255, 250, 245, 0.86);
+    backdrop-filter: blur(12px);
     color: #523D35;
-    padding-left: 20px;
-    padding-right: 20px;
-    margin-bottom: 0.5%;
+    padding: 28px 34px 24px;
+    border-radius: 28px;
     box-sizing: border-box;
+    box-shadow: 0 20px 44px rgba(47, 59, 59, 0.10);
+    border: 1px solid rgba(82, 61, 53, 0.08);
 }
 
 .establishment-name {
-    font-family: 'Cardo';
-    font-size: xx-large;
-    font-weight: 400;
-    margin-top: 10px;
-    margin-bottom: 5px;
+    font-family: Georgia, "Times New Roman", serif;
+    font-size: clamp(2.2rem, 3.2vw, 3.6rem);
+    font-weight: 700;
+    line-height: 1.04;
+    letter-spacing: -0.02em;
+    margin: 0 0 10px 0;
+    color: #523D35;
 }
 
 .star-rating-container {
-    display: flex; 
-    align-items: center; 
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    flex-wrap: wrap;
 }
 
 .establishment-text-box .star-rating,
@@ -61,8 +76,8 @@
 .review-data .star-rating {
     display: flex;
     align-items: center;
-    margin: 1%;
-    font-size: 24px !important;
+    margin: 0;
+    font-size: 22px !important;
 }
 
 .checked, .fa.fa-star-half-o{
@@ -71,8 +86,10 @@
 }
 
 .average {
-    font-size: smaller;
-    margin-left: 5px; 
+    font-size: 15px;
+    color: #6f625c;
+    margin-left: 0;
+    font-weight: 600;
 }
 
 .establishment-text-box.location{
@@ -88,69 +105,74 @@
 
 /* style for main area */
 .main-area {
-    margin: 2px;
-    width: 100%;
-    display: flex;
+    width: min(1380px, 94%);
+    margin: 0 auto 56px;
+    display: grid;
+    grid-template-columns: minmax(0, 1.7fr) minmax(320px, 430px);
+    gap: 40px;
+    align-items: start;
 }
 
 .left-side {
-    width: 70%;
-    margin: 1%;
+    width: 100%;
+    margin: 0;
+    min-width: 0;
 }
 
-.right-side{
-    width: 30%;
-    height: 70%;
-    margin: 1%;
-    background-color: #959D90;
-    border: 3px solid #223030;
+.right-side {
+    width: 100%;
+    margin: 0;
+    background: #f8f4ee;
+    border: 1px solid rgba(82, 61, 53, 0.08);
+    border-radius: 24px;
+    box-shadow: 0 14px 34px rgba(47, 59, 59, 0.06);
+    overflow: hidden;
 }
 
 /* buttons container (write a review, share, favorite)*/
 .navigate-container {
     display: flex;
-    justify-content: flex-start;
-    align-items: center; 
-    margin-left: 10%;
-    margin-top: 15px; 
+    gap: 14px;
+    align-items: center;
+    margin: 0 0 26px 0;
 }
 
 /* share button 380 */
 .navigate-container button.share {
-    margin-right: 10px;
-    padding: 10px 20px;
-    width: 380%; 
-    font-family: 'Biryani', sans-serif;
-    font-size: 14px; 
-    font-weight: bolder;
-    background-color: #523D35;
-    border: 3px solid #523D35;
-    color: white;
-    border-radius: 8px;
+    padding: 14px 22px;
+    min-width: 180px;
+    font-family: Inter, ui-sans-serif, system-ui, sans-serif;
+    font-size: 15px;
+    font-weight: 600;
+    background-color: #6a4b3f;
+    border: 1px solid #6a4b3f;
+    color: #fff;
+    border-radius: 14px;
     cursor: pointer;
+    transition: 0.2s ease;
 }
 
 /* favorite button */
 .navigate-container button.favorite {
-    margin-right: 10px;
-    padding: 10px 20px;
-    width: 40%;
-    font-family: 'Biryani', sans-serif;
-    font-size: 14px; 
-    font-weight: bolder;
-    background-color: #523D35;
-    border: 3px solid #523D35;
-    color: white;
-    border-radius: 8px;
+    padding: 14px 22px;
+    min-width: 180px;
+    font-family: Inter, ui-sans-serif, system-ui, sans-serif;
+    font-size: 15px;
+    font-weight: 600;
+    background-color: #6a4b3f;
+    border: 1px solid #6a4b3f;
+    color: #fff;
+    border-radius: 14px;
     cursor: pointer;
+    transition: 0.2s ease;
 }
 
 /* hover styles for both buttons */
 .navigate-container button.share:hover,
 .navigate-container button.favorite:hover {
-    background-color: white;
-    color: #523D35;
-    border: 3px solid #523D35;
+    background-color: #fffaf5;
+    color: #6a4b3f;
+    border: 1px solid #6a4b3f;
 }
 
 /* dropdown container */
@@ -389,16 +411,15 @@ input#post-date {
 /* overall rating */
 .reviews-header {
     color: #523D35;
-    font-family: 'Cardo';
-    font-weight: 500;
-    font-size: xx-large;
-    margin-left: 10%;
-    margin-top: 3%;
+    font-family: Georgia, "Times New Roman", serif;
+    font-weight: 700;
+    font-size: 3rem;
+    margin: 0 0 16px 0;
 }
 
 .review-section {
-    width: 80%;
-    margin: 0 auto 20px;
+    width: 100%;
+    margin: 0 auto 24px;
 }
 
 .overall-rating {
@@ -434,12 +455,10 @@ input#post-date {
 /* feed header */
 .feed-header {
     color: #523D35;
-    font-family: 'Cardo';
-    font-weight: 500;
-    font-size: x-large;
-    margin-left: 10%;
-    margin-top: 1%;
-    margin-bottom: 1%;
+    font-family: Georgia, "Times New Roman", serif;
+    font-weight: 700;
+    font-size: 2rem;
+    margin: 22px 0 14px 0;
 }
 
 /* filter and sort section */
@@ -447,10 +466,7 @@ input#post-date {
     display: flex;
     justify-content: space-between;
     align-items: center;
-    margin-top: 1%;
-    margin-bottom: 1%;
-    margin-left: 10%;
-    margin-right: 10%;
+    margin: 0 0 18px 0;
 }
 
 .rating-option {
@@ -505,7 +521,7 @@ label[for="star-filter"], label[for="sort"] {
 /* review feed */
 .review-feed {
     margin: 0 auto;
-    width: 80%; 
+    width: 100%; 
 }
 
 .review-container {
@@ -794,25 +810,35 @@ label[for="star-filter"], label[for="sort"] {
 
 /* edit establishment button */
 .edit-establishment {
-    position:relative;
+    position: relative;
     display: flex;
-    padding: 10px 0;
+    gap: 8px;
     align-items: center;
-    margin-right: 10px;
+    flex-shrink: 0;
 }
 
 .edit-establishment button {
-    padding: 4px 8px;
-    width: auto; 
-    height: 100%;
-    font-family: 'Biryani', sans-serif;
-    font-size: 8px; 
-    font-weight: bolder;
-    color: #EFEFE9;
-    background-color: #223030;
-    border: 2px solid #EFEFE9; 
-    border-radius: 6px;
+    width: 42px;
+    height: 42px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    font-family: Inter, ui-sans-serif, system-ui, sans-serif;
+    font-size: 14px;
+    font-weight: 700;
+    color: #fff;
+    background-color: #2f3b3b;
+    border: 2px solid rgba(255, 255, 255, 0.75);
+    border-radius: 12px;
     cursor: pointer;
+    box-shadow: 0 8px 18px rgba(47, 59, 59, 0.18);
+    transition: 0.2s ease;
+}
+
+.edit-establishment button:hover {
+    transform: translateY(-1px);
+    background-color: #523D35;
+    border-color: #fff;
 }
 
 .edit-establishment a {
@@ -844,41 +870,45 @@ label[for="star-filter"], label[for="sort"] {
 /* other services */
 
 hr.h1 {
-    border:1px solid #223030; 
+    border: 0;
+    border-top: 1px solid rgba(82, 61, 53, 0.12);
+    margin: 18px 0 14px;
 }
  
 .establishment-photos, .about-section,
 .services-section, .price-range-section
 .schedule-section, .contact-details-section,
 .location-map-section, .owner-section {
-    margin: 3%;
-    padding: 0;
+    margin: 0;
+    padding: 0 24px 18px;
 }
 
 .establishment-photos > .fa.fa-camera, .fa.fa-info-circle, 
 .fa.fa-coffee, .fa.fa-money, .fa.fa-clock-o, 
 .fa.fa-phone,  .fa.fa-map-marker, .fa.fa-user {
-    color: white;
-    font-size: large; 
-    margin-right: 3px;
+    color: #7b6a61;
+    font-size: 1rem;
+    margin-right: 6px;
 }
 
 .header-text-photogrid, .about-header, 
 .services-header, .price-range-header,
-.schedule-header,  .contact-header, 
-.location-map-header, .owner-section {
-    font-family: 'Cardo';
-    font-weight: 400;
-    color: white;
-    font-size: large;
+.schedule-header, .contact-header, 
+.location-map-header {
+    font-family: Georgia, "Times New Roman", serif;
+    font-weight: 700;
+    color: #523D35;
+    font-size: 1.12rem;
     text-align: left;
-    margin-top: 3%;
+    margin-top: 0;  
 }
 
 .about-edit-container {
     display: flex;
     justify-content: space-between;
-    align-items: center;
+    align-items: flex-start;
+    gap: 16px;
+    padding: 26px 24px 0;
 }
 
 /* photo grid section */
@@ -905,11 +935,12 @@ hr.h1 {
 
 /* about and price range section */
 .introduction, .price-range {
-    font-family: 'Biryani', sans-serif;
-    font-weight: 400;
-    color: #223030; 
-    font-size: small;
-    margin: 0;
+    font-family: Inter, ui-sans-serif, system-ui, sans-serif;
+    font-weight: 500;
+    color: #5f5853;
+    font-size: 15px;
+    line-height: 1.75;
+    margin: 10px 0 0;
     padding: 0;
 }
 
@@ -927,17 +958,19 @@ hr.h1 {
 }
 
 .services-list { 
-    font-family: 'Biryani', sans-serif;
-    font-size: small;
-    color: #223030;
+    font-family: Inter, ui-sans-serif, system-ui, sans-serif;
+    font-size: 15px;
+    line-height: 1.9;
+    color: #5f5853;
 }
 
 /* schedule section */
 .column-weekdays, .column-schedule {
-    font-family: 'Biryani', sans-serif;
-    font-weight: 400;
-    color: #223030; 
-    font-size: small;
+    font-family: Inter, ui-sans-serif, system-ui, sans-serif;
+    font-weight: 500;
+    color: #5f5853;
+    font-size: 14px;
+    line-height: 2;
     margin: 0;
     padding: 0;
     box-sizing: border-box;
@@ -967,20 +1000,22 @@ hr.h1 {
 }
 
 .facebook-page, .instagram-page {
-    color: #223030; 
-    font-family: 'Biryani', sans-serif;
-    font-size: 12px;
-    font-weight: bold;
+    color: #5f5853;
+    font-family: Inter, ui-sans-serif, system-ui, sans-serif;
+    font-size: 13px;
+    font-weight: 600;
+    line-height: 1.8;
 }
 
 /* map section */
 .address{
-    margin-top: 5px;
-    margin-bottom: 0px;
-    font-family: 'Biryani', sans-serif;
-    font-size: 12px;
+    margin-top: 8px;
+    margin-bottom: 6px;
+    font-family: Inter, ui-sans-serif, system-ui, sans-serif;
+    font-size: 13px;
     font-style: italic;
-    color: #223030;
+    line-height: 1.7;
+    color: #6a625d;
 }
 
 #establishment-map{
@@ -993,9 +1028,131 @@ hr.h1 {
 
 /* owner details section */
 .owner {
-    margin: 2px;
-    font-family: 'Biryani', sans-serif;
+    margin: 8px 0 0;
+    font-family: Inter, ui-sans-serif, system-ui, sans-serif;
     font-size: 14px;
-    font-style: bolder;
-    color: #223030;
+    font-weight: 600;
+    color: #5f5853;
+}
+
+.location {
+    margin-top: 12px;
+    color: #766963;
+    font-size: 15px;
+    font-weight: 500;
+}
+
+.parent-content {
+    background: #f7f4ef;
+}
+
+.reviews,
+.right-side section {
+    padding-top: 4px;
+}
+
+@media (max-width: 1024px) {
+    .main-area {
+        grid-template-columns: 1fr;
+        gap: 28px;
+    }
+
+    .left-side,
+    .right-side {
+        width: 100%;
+    }
+
+    .blockA {
+        min-height: 320px;
+    }
+
+    .establishment-main-photo {
+        height: 320px;
+    }
+
+    .navigate-container {
+        flex-wrap: wrap;
+    }
+}
+
+@media (max-width: 640px) {
+    .establishment-text-box {
+        width: 92%;
+        padding: 18px 18px 16px;
+        bottom: 16px;
+    }
+
+    .establishment-main-photo {
+        height: 280px;
+    }
+
+    .blockA {
+        min-height: 280px;
+    }
+}
+
+.right-side section {
+    padding: 6px 0 10px;
+}
+
+.about-section,
+.services-section,
+.price-range-section,
+.schedule-section,
+.contact-details-section,
+.establishment-photos,
+.location-map-section,
+.owner-section {
+    position: relative;
+}
+
+.services-section,
+.price-range-section,
+.schedule-section,
+.contact-details-section,
+.establishment-photos,
+.location-map-section,
+.owner-section {
+    padding-top: 14px;
+}
+
+.photo-grid .column img {
+    border-radius: 14px;
+    aspect-ratio: 1 / 1;
+    object-fit: cover;
+    background: #ece6de;
+}
+
+#establishment-map {
+    margin: 10px 0 0;
+    width: 100%;
+    max-width: 100%;
+    height: 260px;
+    border: 0;
+    border-radius: 16px;
+    display: block;
+}
+
+.fa.fa-facebook-square,
+.fa.fa-instagram {
+    color: #7b6a61;
+    font-size: 20px;
+    margin-right: 8px;
+}
+
+.services-list .fa.fa-check {
+    color: #7b6a61;
+    margin-right: 8px;
+}
+
+.about-section .introduction,
+.services-list,
+.price-range,
+.column-weekdays,
+.column-schedule,
+.facebook-page,
+.instagram-page,
+.address,
+.owner {
+    max-width: 100%;
 }
