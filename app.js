@@ -87,7 +87,7 @@ mongoose.connect("mongodb://127.0.0.1:27017/cssecdv");
 mongoose.connection.on('connected', () => {
   console.log('\nDatabase connected successfully\n');
   importedFiles.length = 0;
-  //importJSONFilesToDB();
+  importJSONFilesToDB();
 });
 
 mongoose.connection.on('error', (err) => {
