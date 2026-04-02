@@ -3,44 +3,25 @@ const express = require('express');
 
 const server = express();
 
-// ✅ Session setup (SAFE)
 server.use(session({
-    secret: 'private_key',
-    resave: false,
-    saveUninitialized: false // 🔥 important fix
+  secret: 'private_key',
+  resave: false,
+  saveUninitialized: false
 }));
 
-// ✅ SAFE middleware (no more crash)
-server.use(function(req, res, next) {
+server.use(function (req, res, next) {
+  const userSession = req.session || {};
 
-    // 🔥 ALWAYS ensure session exists
-    const userSession = req.session || {};
+  res.locals.isLoggedIn = !!userSession.username;
+  res.locals.isLoggedOut = !userSession.username;
+  res.locals.currentUser = userSession.username || null;
+  res.locals.currentUserType = userSession.userType || null;
 
-    if (userSession.username) {
-        res.locals.isLoggedIn = true;
-        res.locals.isLoggedOut = false;
+  res.locals.isAdmin = userSession.userType === 'admin';
+  res.locals.isOwner = userSession.userType === 'owner';
+  res.locals.isRater = userSession.userType === 'rater';
 
-        if (userSession.userType === 'owner') {
-            res.locals.isOwner = true;
-            res.locals.isRater = false;
-        } 
-        else if (userSession.userType === 'rater') {
-            res.locals.isOwner = false;
-            res.locals.isRater = true;
-        } 
-        else {
-            res.locals.isOwner = false;
-            res.locals.isRater = false;
-        }
-
-    } else {
-        res.locals.isLoggedIn = false;
-        res.locals.isLoggedOut = true;
-        res.locals.isOwner = false;
-        res.locals.isRater = false;
-    }
-
-    next();
+  next();
 });
 
 module.exports = server;

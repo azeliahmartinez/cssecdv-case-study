@@ -389,5 +389,18 @@
         "createdreview": [], 
         "followers": ["reginaaa","cadyyy", "aaaaron", "karen_","gretchh"],
         "following": []
+    },
+    {
+         "user_icon": "https://i.imgocean.com/user6b989451863c33d6.png",
+         "name": "System Administrator",
+         "username": "adminuser",
+        "bio": "Website administrator",
+        "email": "adminuser@gmail.com",
+         "password": "Admin1234",
+         "userType": "admin",
+         "favoriteplace": [],
+        "createdreview": [],
+         "followers": [],
+         "following": []
     }
 ]
