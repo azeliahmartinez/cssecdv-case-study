@@ -8,6 +8,7 @@ const bcrypt = require('bcrypt');
 const moment = require('moment');
 const multer = require('multer');
 const path = require('path');
+const { requireAuth, requireRole } = require('./authMiddleware');
 
 function hashPassword(password) {
   return bcrypt.hashSync(password, 10);
@@ -27,7 +28,7 @@ const storage = multer.diskStorage({
 const upload = multer({ 
     storage: storage,
     limits: {
-        fileSize: 1024 * 1024 * 15 // 5MB max file size
+        fileSize: 1024 * 1024 * 15 // 15MB max file size
     },
     fileFilter: function (req, file, cb) {
         // Accept only image files
@@ -43,6 +44,7 @@ const errorFn = function (error) {
   console.error('Error:', error);
 };
 
+ /*
 // function to check if current user is logged in or not
 function isLoggedIn(req, res, next) {
   if (req.session.username) {
@@ -71,7 +73,7 @@ function isRater(req, res, next) {
     res.redirect('/');
   }
 }
-
+*/
 
 // function to calculate and update establishment ratings
 function calculateAndUpdateRatings(establishment_data) {
@@ -181,42 +183,44 @@ function addRoutes(server) {
 
   // route for creating user in the database
   router.post('/create-user', function(req, resp) {
-    const saltRounds = 10;
+  const saltRounds = 10;
 
-    userModel.findOne({ username: req.body.username }).then(existingUser => {
-      if (existingUser) {
-        return resp.status(400).json({ status: 'error', message: 'Username already exists. Please choose another one.' });
-      }
+  userModel.findOne({ username: req.body.username }).then(existingUser => {
+    if (existingUser) {
+      return resp.status(400).json({ status: 'error', message: 'Username already exists. Please choose another one.' });
+    }
 
-      bcrypt.hash(req.body.password, saltRounds).then(function(hashedPassword) {
-        const userInstance = userModel({
-          name: req.body.name,
-          username: req.body.username,
-          bio: req.body.bio,
-          email: req.body.email,
-          password: hashedPassword,
-          userType: req.body.userType,
-          following: [], 
-          followers: []
-        });
-
-        return userInstance.save();
-      })
-      .then(function(user) {
-        console.log('User created');
-        req.session.username = req.body.username;
-        req.session.name = req.body.name;
-        resp.json({ success: true, message: 'User created successfully' });
-      })
-      .catch(function(error) {
-        errorFn(error);
-        resp.status(500).json({ status: 'error', message: 'Internal Server Error' });
+    bcrypt.hash(req.body.password, saltRounds).then(function(hashedPassword) {
+      const userInstance = userModel({
+        name: req.body.name,
+        username: req.body.username,
+        bio: req.body.bio,
+        email: req.body.email,
+        password: hashedPassword,
+        userType: 'rater', // force public registration to Role B only
+        following: [],
+        followers: []
       });
+
+      return userInstance.save();
+    })
+    .then(function(user) {
+      console.log('User created');
+      req.session.username = user.username;
+      req.session.name = user.name;
+      req.session.user_icon = user.user_icon;
+      req.session.userType = user.userType;
+      resp.json({ success: true, message: 'User created successfully' });
+    })
+    .catch(function(error) {
+      errorFn(error);
+      resp.status(500).json({ status: 'error', message: 'Internal Server Error' });
     });
   });
+});
 
   // route for registration page (choosing an avatar)
-  router.get('/registrationAvatar', function (req, res) {
+  router.get('/registrationAvatar', requireAuth, function (req, res) {
     console.log('\nCurrently choosing an avatar');
     const { username } = req.session; 
     const searchQuery = {};
@@ -236,14 +240,11 @@ function addRoutes(server) {
   });
 
   // route for saving the avatar chosen by the user in the database
-  router.post('/choose-avatar', function(req, res) {
+  router.post('/choose-avatar', requireAuth, function(req, res) {
     console.log('\nAvatar saved successfully');
     const { username } = req.session;
     const { user_icon } = req.body;
 
-    if (!username) {
-      return res.status(401).json({ success: false, message: 'User not authenticated' });
-    }
 
     userModel.findOne({ username: username }).then(user => {
       if (!user) {
@@ -396,7 +397,7 @@ function addRoutes(server) {
   });
   
   // route for user view homepage
-  router.get('/landingPage', isLoggedIn, function (req, resp) {
+  router.get('/landingPage', requireAuth, function (req, resp) {
     console.log('\nCurrently at Landing Page');
     const loggedInUser = req.session.username;
     const searchQuery = {username: loggedInUser};
@@ -557,7 +558,7 @@ function addRoutes(server) {
   });
 
   // Route to create establishment (not fully functioning)
-router.post('/create-establishment', isOwner, (req, res) => {
+router.post('/create-establishment', requireRole('owner', 'admin'), (req, res) => {
   try {
     console.log("CREATE ESTABLISHMENT BODY:", req.body);
 
@@ -633,11 +634,11 @@ router.post('/create-establishment', isOwner, (req, res) => {
   }
 });
 
-router.get('/owner/establishments', isOwner, async (req, res) => {
+router.get('/owner/establishments', requireRole('owner', 'admin'), async (req, res) => {
   try {
-    const establishments = await establishmentModel.find({
-      owner_username: req.session.username
-    }).lean();
+    const establishments = req.session.userType === 'admin'
+      ? await establishmentModel.find({}).lean()
+      : await establishmentModel.find({ owner_username: req.session.username }).lean();
 
     res.render('ownerDashboard', {
       layout: 'index',
@@ -651,18 +652,140 @@ router.get('/owner/establishments', isOwner, async (req, res) => {
   }
 });
 
+// =========================
+// ADMIN ROUTES
+// =========================
+
+// Admin Dashboard
+router.get('/admin/dashboard',
+  requireAuth,
+  requireRole('admin'),
+  async (req, res) => {
+    try {
+      const users = await userModel.find().lean();
+      const establishments = await establishmentModel.find().lean();
+
+      res.render('adminDashboard', {
+        layout: 'index',
+        users,
+        establishments,
+        currentUser: req.session.username
+      });
+
+    } catch (err) {
+      console.error(err);
+      res.status(500).send('Admin dashboard error');
+    }
+});
+
+// Delete User (Admin only)
+router.post('/admin/delete-user/:id',
+  requireAuth,
+  requireRole('admin'),
+  async (req, res) => {
+    try {
+      await userModel.findByIdAndDelete(req.params.id);
+      res.json({ success: true });
+    } catch (err) {
+      console.error(err);
+      res.status(500).json({ success: false });
+    }
+});
+
+// Admin creates admin or owner account
+router.post('/admin/create-user',
+  requireAuth,
+  requireRole('admin'),
+  async (req, res) => {
+    try {
+      const { name, username, email, password, userType } = req.body;
+
+      if (!name || !username || !email || !password || !userType) {
+        return res.status(400).json({ success: false, message: 'All fields are required' });
+      }
+
+      if (!['admin', 'owner'].includes(userType)) {
+        return res.status(400).json({ success: false, message: 'Invalid role' });
+      }
+
+      const existingUser = await userModel.findOne({
+        $or: [{ username }, { email }]
+      });
+
+      if (existingUser) {
+        return res.status(400).json({ success: false, message: 'Username or email already exists' });
+      }
+
+      const hashedPassword = await bcrypt.hash(password, 10);
+
+      await userModel.create({
+        name,
+        username,
+        bio: '',
+        email,
+        password: hashedPassword,
+        userType,
+        following: [],
+        followers: [],
+        favoriteplace: [],
+        createdreview: []
+      });
+
+      return res.json({ success: true, message: 'User created successfully' });
+    } catch (err) {
+      console.error(err);
+      return res.status(500).json({ success: false, message: 'Failed to create user' });
+    }
+});
+
+// Admin changes a user's role
+router.post('/admin/change-role',
+  requireAuth,
+  requireRole('admin'),
+  async (req, res) => {
+    try {
+      const { userId, newRole } = req.body;
+
+      if (!userId || !newRole) {
+        return res.status(400).json({ success: false, message: 'Missing required fields' });
+      }
+
+      if (!['admin', 'owner', 'rater'].includes(newRole)) {
+        return res.status(400).json({ success: false, message: 'Invalid role' });
+      }
+
+      await userModel.findByIdAndUpdate(userId, { userType: newRole });
+
+      return res.json({ success: true, message: 'Role updated successfully' });
+    } catch (err) {
+      console.error(err);
+      return res.status(500).json({ success: false, message: 'Failed to update role' });
+    }
+});
+
 async function checkOwnership(req, res, next) {
-  const est = await establishmentModel.findById(req.params.establishmentId);
+  try {
+    // ✅ allow admin immediately
+    if (req.session.userType === 'admin') {
+      return next();
+    }
 
-  if (!est) {
-    return res.status(404).json({ message: 'Not found' });
+    const est = await establishmentModel.findById(req.params.establishmentId).lean();
+
+    if (!est) {
+      return res.status(404).json({ message: 'Not found' });
+    }
+
+    if (est.owner_username !== req.session.username) {
+      return res.status(403).json({ message: 'Unauthorized' });
+    }
+
+    return next();
+
+  } catch (err) {
+    console.error('Ownership check error:', err);
+    return res.status(500).json({ message: 'Server error' });
   }
-
-  if (est.owner_username !== req.session.username) {
-    return res.status(403).json({ message: 'Unauthorized' });
-  }
-
-  next();
 }
 
     // read establishment
@@ -708,7 +831,7 @@ async function checkOwnership(req, res, next) {
             currentUserIcon: req.session.user_icon,
             currentUserType: req.session.userType,
               // ✅ ADD THIS
-            isOwner: req.session.userType === 'owner',
+            isOwner: req.session.userType === 'owner' || req.session.userType === 'admin',
             selectedRatingFilter: ratingFilter,
             establishmentRating: establishment_data.establishment_ratings,
             ratingDistribution: JSON.stringify(ratingDistribution)
@@ -720,7 +843,7 @@ async function checkOwnership(req, res, next) {
 
   // Route for editing establishment details
 router.post('/edit-establishment/:establishmentId',
-  isOwner,
+  requireRole('owner', 'admin'),
   checkOwnership,
   async (req, res) => {
 
@@ -740,7 +863,7 @@ router.post('/edit-establishment/:establishmentId',
 });
 
 router.post('/delete-establishment/:establishmentId',
-  isOwner,
+  requireRole('owner', 'admin'),
   checkOwnership,
   async (req, res) => {
 
@@ -757,7 +880,7 @@ router.post('/delete-establishment/:establishmentId',
 
 
   // AAAAAAA ESTAB SAVES TO FAVORITES !!!!!!! TIME CHECK 2:18AM
-  router.post('/add-to-favorites', function(req, res) {
+  router.post('/add-to-favorites', requireAuth, function(req, res) {
     try {
       console.log('Request body:', req.body); 
   
@@ -803,7 +926,7 @@ router.post('/delete-establishment/:establishmentId',
   });
   
   // route for writing a review
-  router.post('/submit-review', upload.single('review_photo'), function(req, res){
+  router.post('/submit-review', requireAuth, upload.single('review_photo'), function(req, res){
     try {
         const { rating, review_title, place_name, caption } = req.body;
         const review_photo = req.file ? req.file.filename : null;
@@ -849,29 +972,38 @@ router.post('/delete-establishment/:establishmentId',
   });
 
   // route for edit review 
-  router.post('/edit-review/:reviewId', function(req, res) {
-    const reviewId = req.params.reviewId;
-    const updatedTitle = req.body.review_title;
-    const updatedDescription = req.body.caption;
-    const updatedRating = req.body.rating;
+  router.post('/edit-review/:reviewId',
+  requireAuth,
+  async function(req, res) {
 
-    // Update the review in the database
-    reviewModel.findByIdAndUpdate(reviewId, {
-        review_title: updatedTitle,
-        caption: updatedDescription,
-        rating: updatedRating
-    }, { new: true })
-    .then(updatedReview => {
-        res.json({ success: true, message: 'Review edited successfully!' });
-    })
-    .catch(error => {
-        console.error('Error editing review:', error);
-        res.status(500).json({ success: false, message: 'An error occurred while processing your request.' });
-    });
-  });
+    const review = await reviewModel.findById(req.params.reviewId);
+
+    if (!review) {
+      return res.status(404).json({ success: false });
+    }
+
+    if (
+      review.username !== req.session.username &&
+      req.session.userType !== 'admin'
+    ) {
+      return res.status(403).json({ success: false });
+    }
+
+    const updated = await reviewModel.findByIdAndUpdate(
+      req.params.reviewId,
+      {
+        review_title: req.body.review_title,
+        caption: req.body.caption,
+        rating: req.body.rating
+      },
+      { new: true }
+    );
+
+    res.json({ success: true, updated });
+});
 
   // Route to post comment
-  router.post('/submit-comment', (req, res) => {
+  router.post('/submit-comment', requireAuth, (req, res) => {
     
     const { reviewId, comment } = req.body;
 
@@ -972,7 +1104,7 @@ router.post('/delete-establishment/:establishmentId',
   });
 
   // route to follow a user
-  router.post('/follow/:username', async function(req, res) {
+  router.post('/follow/:username', requireAuth, async function(req, res) {
     try {
         const loggedInUser = req.session.username;
         const usernameToFollow = req.params.username;
@@ -1010,7 +1142,7 @@ router.post('/delete-establishment/:establishmentId',
   });
 
   // route to unfollow a user
-  router.post('/unfollow/:username', async function(req, res) {
+  router.post('/unfollow/:username', requireAuth, async function(req, res) {
     try {
         const loggedInUser = req.session.username;
         const usernameToUnfollow = req.params.username;
@@ -1055,7 +1187,7 @@ router.post('/delete-establishment/:establishmentId',
   });
 
   // route for updating user's information on profile page
-  router.post('/update-user', upload.single('user_icon'), function(req, resp) {
+  router.post('/update-user', requireAuth, upload.single('user_icon'), function(req, resp) {
     const updateQuery = { username: req.session.username };
     
 
@@ -1160,7 +1292,7 @@ router.post('/delete-establishment/:establishmentId',
   });
 
   //router to delete a review
-  router.post('/remove-review', async (req, res) => {
+  router.post('/remove-review', requireAuth, async (req, res) => {
     try {
         const reviewPhoto = req.body.review_photo;
 
