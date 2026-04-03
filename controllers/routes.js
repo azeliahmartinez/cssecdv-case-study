@@ -4,11 +4,25 @@ const userModel = require('../models/User');
 const reviewModel = require('../models/Review');
 const establishmentModel = require('../models/Establishment');
 const avatarModel = require('../models/Avatar');
+const auditModel = require('../models/Audit');
 const bcrypt = require('bcrypt');
+
 const moment = require('moment');
 const multer = require('multer');
 const path = require('path');
 const { requireAuth, requireRole } = require('./authMiddleware');
+
+async function logAction(req, actionText) {
+  try {
+    await auditModel.create({
+      action: actionText,
+      user: req.session.username || 'Unknown',
+      role: req.session.userType || 'Unknown'
+    });
+  } catch (err) {
+    console.error('Audit log error:', err);
+  }
+}
 
 function hashPassword(password) {
   return bcrypt.hashSync(password, 10);
@@ -288,61 +302,70 @@ function addRoutes(server) {
     });
   });
   // route for reading user from the database to login
-  router.post('/read-user', function(req, resp) {
-    try {
-      const { username, password, rememberMe } = req.body; 
+  router.post('/read-user', async function(req, resp) {
+  try {
+    const { username, password, rememberMe } = req.body;
 
-      console.log("\nREMEMBER ME CHECKED? " + rememberMe);
+    console.log("\nREMEMBER ME CHECKED? " + rememberMe);
 
-      userModel.findOne({ username }).then(function(user) {
-        console.log("\nFinding user: ", username);
+    const user = await userModel.findOne({ username });
 
-        if (user) {
-          bcrypt.compare(password, user.password).then(function(passwordMatch) {
-            if (passwordMatch) {
-              req.session.username = user.username;
-              req.session.name = user.name;
-              req.session.user_icon = user.userType === 'admin'
-                ? '/images/admin-icon.png'
-                : user.user_icon;
-              req.session.userType = user.userType;
-              if (rememberMe === 'on') {
-                req.session.cookie.maxAge = 1000 * 60 * 60 * 24 * 21; // sets expiry of user login (in seconds)
-                const rememberMeToken = generateRememberMeToken();
-                user.rememberMeToken = rememberMeToken;
-                user.rememberMeTokenExpires = new Date(Date.now() + 30 * 24 * 60 * 60 * 1000); // 30 days from now
-                user.save();
+    console.log("\nFinding user: ", username);
 
-                resp.cookie('remember_me', rememberMeToken, {
-                  expires: moment().add(30, 'days').toDate(), 
-                  httpOnly: true,
-                });
-              }
-              console.log("\nUser ", req.session.username, " Found");
-              console.log("User Type:", req.session.userType);
-              if (user.userType === 'admin') {
-                resp.json({ success: true, redirect: '/admin/dashboard' });
-              } else {
-                resp.json({ success: true, redirect: '/landingPage' });
-              }
-            } else {
-              console.log("\nPasswords do not match for user: ", username);
-              resp.json({ success: false });
-            }
-          });
-        } else {
-          console.log("\nUser not found: ", username);
-          resp.json({ success: false });
-        }
-      }).catch(function(error) {
-        console.error("Error finding user:", error);
-        resp.status(500).json({ success: false, error: "Internal Server Error" });
-      });
-    } catch (error) {
-      console.error("Error processing login:", error);
-      resp.status(500).json({ success: false, error: "Internal Server Error" });
+    if (!user) {
+      console.log("\nUser not found: ", username);
+      return resp.json({ success: false });
     }
-  });
+
+    const passwordMatch = await bcrypt.compare(password, user.password);
+
+    if (!passwordMatch) {
+      console.log("\nPasswords do not match for user: ", username);
+      return resp.json({ success: false });
+    }
+
+    // ✅ SESSION SETUP
+    req.session.username = user.username;
+    req.session.name = user.name;
+    req.session.user_icon = user.userType === 'admin'
+      ? '/images/admin-icon.png'
+      : user.user_icon;
+    req.session.userType = user.userType;
+
+    // ✅ REMEMBER ME
+    if (rememberMe === 'on') {
+      req.session.cookie.maxAge = 1000 * 60 * 60 * 24 * 21;
+
+      const rememberMeToken = generateRememberMeToken();
+      user.rememberMeToken = rememberMeToken;
+      user.rememberMeTokenExpires = new Date(Date.now() + 30 * 24 * 60 * 60 * 1000);
+
+      await user.save();
+
+      resp.cookie('remember_me', rememberMeToken, {
+        expires: moment().add(30, 'days').toDate(),
+        httpOnly: true,
+      });
+    }
+
+    console.log("\nUser ", req.session.username, " Found");
+    console.log("User Type:", req.session.userType);
+
+    // 🔥 AUDIT LOG
+    await logAction(req, `User logged in`);
+
+    // ✅ REDIRECT
+    if (user.userType === 'admin') {
+      return resp.json({ success: true, redirect: '/admin/dashboard' });
+    } else {
+      return resp.json({ success: true, redirect: '/landingPage' });
+    }
+
+  } catch (error) {
+    console.error("Error processing login:", error);
+    resp.status(500).json({ success: false, error: "Internal Server Error" });
+  }
+});
 
   // logout route
   router.get('/logout', function(req, res) {
@@ -567,11 +590,12 @@ function addRoutes(server) {
     });    
   });
 
-  // Route to create establishment (not fully functioning)
-router.post('/create-establishment', requireRole('owner', 'admin'), (req, res) => {
-  try {
-    console.log("CREATE ESTABLISHMENT BODY:", req.body);
+  // Route to create establishment (
+router.post('/create-establishment',
+  requireRole('owner', 'admin'),
+  async (req, res) => {
 
+  try {
     const {
       banner_image,
       establishment_name,
@@ -586,13 +610,6 @@ router.post('/create-establishment', requireRole('owner', 'admin'), (req, res) =
       establishment_map
     } = req.body;
 
-    if (!establishment_name || !establishment_address) {
-      return res.status(400).json({
-        success: false,
-        message: 'Establishment name and address are required.'
-      });
-    }
-
     const newEstablishment = new establishmentModel({
       banner_image,
       establishment_name,
@@ -601,7 +618,6 @@ router.post('/create-establishment', requireRole('owner', 'admin'), (req, res) =
       price_range,
       establishment_ratings: 0,
 
-    
       services_offered: Array.isArray(services_offered)
         ? services_offered
         : services_offered ? services_offered.split(',') : [],
@@ -623,20 +639,19 @@ router.post('/create-establishment', requireRole('owner', 'admin'), (req, res) =
       owner_username: req.session.username
     });
 
-    newEstablishment.save()
-      .then(est => {
-        console.log("CREATED ESTABLISHMENT:", est);
+    // 🔥 SAVE (NO .then)
+    const est = await newEstablishment.save();
 
-        res.json({
-          success: true,
-          message: 'Establishment created successfully!',
-          establishmentId: est._id
-        });
-      })
-      .catch(err => {
-        console.error(err);
-        res.status(500).json({ success: false });
-      });
+    // 🔥 AUDIT LOG (NOW WORKS)
+    await logAction(req, `Created establishment: ${est.establishment_name}`);
+
+    console.log("CREATED ESTABLISHMENT:", est);
+
+    res.json({
+      success: true,
+      message: 'Establishment created successfully!',
+      establishmentId: est._id
+    });
 
   } catch (err) {
     console.error(err);
@@ -674,11 +689,13 @@ router.get('/admin/dashboard',
     try {
       const users = await userModel.find().lean();
       const establishments = await establishmentModel.find().lean();
+      const logs = await auditModel.find().sort({ timestamp: -1 }).lean();
 
     res.render('adminDashboard', {
       layout: 'index',
       users,
       establishments,
+      logs, //THIS IS THE FIX
       currentUser: req.session.username,
       currentUserIcon: req.session.user_icon,
       currentUserType: req.session.userType
@@ -696,7 +713,11 @@ router.post('/admin/delete-user/:id',
   requireRole('admin'),
   async (req, res) => {
     try {
+      const user = await userModel.findById(req.params.id);
+
       await userModel.findByIdAndDelete(req.params.id);
+
+      await logAction(req, `Deleted user: ${user.username}`);
       res.json({ success: true });
     } catch (err) {
       console.error(err);
@@ -742,8 +763,9 @@ router.post('/admin/create-user',
         favoriteplace: [],
         createdreview: []
       });
-
+      await logAction(req, `Created user: ${username} (${userType})`);
       return res.json({ success: true, message: 'User created successfully' });
+      
     } catch (err) {
       console.error(err);
       return res.status(500).json({ success: false, message: 'Failed to create user' });
@@ -765,8 +787,10 @@ router.post('/admin/change-role',
       if (!['admin', 'owner', 'rater'].includes(newRole)) {
         return res.status(400).json({ success: false, message: 'Invalid role' });
       }
+      const user = await userModel.findById(userId);
 
       await userModel.findByIdAndUpdate(userId, { userType: newRole });
+      await logAction(req, `Changed role of ${user.username} to ${newRole}`);
 
       return res.json({ success: true, message: 'Role updated successfully' });
     } catch (err) {
@@ -774,6 +798,8 @@ router.post('/admin/change-role',
       return res.status(500).json({ success: false, message: 'Failed to update role' });
     }
 });
+
+
 
 async function checkOwnership(req, res, next) {
   try {
@@ -833,6 +859,10 @@ async function checkOwnership(req, res, next) {
 
           //console.log('Establishment Data:', establishment_data);
           //console.log('Review Data: ', review_data);
+          const isOwnerOfThisEstablishment =
+          req.session.userType === 'admin' ||
+          establishment_data.owner_username === req.session.username;
+
           resp.render('establishment', {
             layout: 'index',
             title: establishmentName,
@@ -844,6 +874,7 @@ async function checkOwnership(req, res, next) {
             currentUserType: req.session.userType,
               // ✅ ADD THIS
             isOwner: req.session.userType === 'owner' || req.session.userType === 'admin',
+            isOwnerOfThisEstablishment: isOwnerOfThisEstablishment,
             selectedRatingFilter: ratingFilter,
             establishmentRating: establishment_data.establishment_ratings,
             ratingDistribution: JSON.stringify(ratingDistribution)
@@ -866,6 +897,9 @@ router.post('/edit-establishment/:establishmentId',
       { new: true }
     );
 
+    await logAction(req, `Edited establishment: ${updated.establishment_name}`);
+
+
     res.json({ success: true, updated });
 
   } catch (err) {
@@ -880,10 +914,15 @@ router.post('/delete-establishment/:establishmentId',
   async (req, res) => {
 
   try {
+    const est = await establishmentModel.findById(req.params.establishmentId);
+
     await establishmentModel.findByIdAndDelete(req.params.establishmentId);
 
-    res.json({ success: true });
+    await logAction(req, `Deleted establishment: ${est.establishment_name}`);
 
+    res.json({ success: true });
+  
+    
   } catch (err) {
     console.error(err);
     res.status(500).json({ success: false });
@@ -938,50 +977,60 @@ router.post('/delete-establishment/:establishmentId',
   });
   
   // route for writing a review
-  router.post('/submit-review', requireAuth, upload.single('review_photo'), function(req, res){
-    try {
-        const { rating, review_title, place_name, caption } = req.body;
-        const review_photo = req.file ? req.file.filename : null;
-        console.log('Uploaded file:', req.file);
-        console.log('Uploaded filename:', review_photo);
-        
-        const newReview = new reviewModel({
-            user_photo: req.session.user_icon,
-            display_name: req.session.name,
-            username: req.session.username,
-            rating,
-            review_photo: './uploads/' + review_photo, 
-            review_title,
-            place_name,
-            caption,
-            date_posted: new Date()
-        });
+  router.post('/submit-review',
+  requireAuth,
+  upload.single('review_photo'),
+  async function(req, res) {
 
-      newReview.save().then(() => {
-        return userModel.findOneAndUpdate(
-        { username: req.session.username },
-        { $push: { createdreview: { review_photo, place_name, review_title } } }
-        );
-      })
-      .then(() => {
-        console.log('\nReview submitted');
-        establishmentModel.find({ establishment_name: place_name }).lean().then(function(establishment_data){
-          calculateAndUpdateRatings(establishment_data);
-        }).catch(function(error) {
-          console.error('Error fetching establishments:', error);
-          res.status(500).json({ success: false, message: 'An error occurred while processing your request.' });
-        });
-        res.json({ success: true, message: 'Review submitted successfully!' });
-      })
-      .catch(error => {
-        console.error('Error:', error);
-        res.status(500).json({ success: false, message: 'An error occurred while processing your request.' });
-      });
-    } catch (error) {
-      console.error('Error:', error);
-      res.status(500).json({ success: false, message: 'An error occurred while processing your request.' });
-    }
-  });
+  try {
+    const { rating, review_title, place_name, caption } = req.body;
+    const review_photo = req.file ? req.file.filename : null;
+
+    console.log('Uploaded file:', req.file);
+
+    const newReview = new reviewModel({
+      user_photo: req.session.user_icon,
+      display_name: req.session.name,
+      username: req.session.username,
+      rating,
+      review_photo: './uploads/' + review_photo,
+      review_title,
+      place_name,
+      caption,
+      date_posted: new Date()
+    });
+
+    // ✅ SAVE REVIEW
+    await newReview.save();
+
+    // ✅ UPDATE USER REVIEWS
+    await userModel.findOneAndUpdate(
+      { username: req.session.username },
+      { $push: { createdreview: { review_photo, place_name, review_title } } }
+    );
+
+    // 🔥 AUDIT LOG
+    await logAction(req, `Posted review on: ${place_name}`);
+
+    console.log('\nReview submitted');
+
+    // ✅ UPDATE RATINGS
+    const establishment_data = await establishmentModel.find({ establishment_name: place_name }).lean();
+    calculateAndUpdateRatings(establishment_data);
+
+    res.json({
+      success: true,
+      message: 'Review submitted successfully!'
+    });
+
+  } catch (error) {
+    console.error('Error:', error);
+    res.status(500).json({
+      success: false,
+      message: 'An error occurred while processing your request.'
+    });
+  }
+});
 
   // route for edit review 
   router.post('/edit-review/:reviewId',

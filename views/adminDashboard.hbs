@@ -151,15 +151,24 @@
                 <div>
                     <p class="owner-eyebrow">Audit</p>
                     <h2>Audit Trails</h2>
-                    <p class="owner-subtext">UI section prepared. Connect this to your backend audit log source when ready.</p>
                 </div>
             </div>
 
-            <div class="admin-log-placeholder">
+            <div class="admin-log-list">
+            {{#if logs.length}}
+                {{#each logs}}
                 <div class="admin-log-item">
-                    <span class="admin-log-title">No audit trail data connected yet</span>
-                    <span class="admin-log-subtext">Add a backend route for logs, then render them in this section.</span>
+                    <div><b>{{user}}</b> ({{role}})</div>
+                    <div>{{action}}</div>
+                    <div style="font-size: 12px; color: gray;">
+                    {{timestamp}}
+                    </div>
                 </div>
+                <hr>
+                {{/each}}
+            {{else}}
+                <div>No audit logs available.</div>
+            {{/if}}
             </div>
         </div>
     </div>

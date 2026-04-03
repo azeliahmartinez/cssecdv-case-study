@@ -188,6 +188,10 @@ function importJSONFilesToDB() {
           model = establishmentModel;
         } else if (file.startsWith('avatar')) {
           model = avatarModel;
+        } else {
+          console.log(`Skipping file: ${file}`);
+          processedFiles++;
+          return;
         }
 
         model.find().then(function (existingData) {
