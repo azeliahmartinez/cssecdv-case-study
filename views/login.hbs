@@ -1,44 +1,54 @@
-<body class="registration-body">
-    
-<!-- container for the content -->
-<div class="parent-content-reg">
-    
-    <div class="left-reg">
-        <div class="img">
-           <img class="logo" src="/images/logo2.png" alt="CoFeed Logo"/>
-        </div>
+<div class="login-page-modern">
+    <div class="login-shell-modern">
+        <div class="login-card-modern">
+            <div class="login-left-modern">
+                <img class="login-logo-modern" src="/images/logo2.png" alt="CoFeed Logo"/>
 
-        <div class="details">
-            <p class="greeting"><b>Welcome back,</b></p>
-            <p class="greeting"><b>Brew Buddy!</b></p>
-            <p class="tagline">Ready to Sip, Share, and</p>
-            <p class="tagline">Discover the Perfect Pour?</p>
+                <div class="login-copy-modern">
+                    <p class="login-eyebrow-modern">Welcome Back</p>
+                    <h1 class="login-greeting-modern">Welcome back,<br>Brew Buddy!</h1>
+                    <p class="login-tagline-modern">Ready to Sip, Share, and</p>
+                    <p class="login-tagline-modern">Discover the Perfect Pour?</p>
+                </div>
+            </div>
+
+            <div class="login-divider-modern"></div>
+
+            <div class="login-right-modern">
+                <p class="login-main-modern">Login</p>
+                <p class="login-subtext-modern">Access your account to explore cafés, manage reviews, and continue your Cofeed experience.</p>
+
+                <form name="read-user" onsubmit="return submitLoginForm()">
+                    <div class="login-form-group-modern">
+                        <label for="username-field">Username</label>
+                        <input name="username" id="username-field" type="text" placeholder="Enter your username">
+                    </div>
+
+                    <div class="login-form-group-modern">
+                        <label for="password-field">Password</label>
+                        <div class="login-password-input-wrap-modern">
+                            <input name="password" id="password-field" type="password" placeholder="Enter your password">
+                            <i
+                                id="toggle-password"
+                                class="fa fa-eye-slash login-password-toggle-modern"
+                                onclick="togglePasswordVisibility('password-field', 'toggle-password')"
+                            ></i>
+                        </div>
+                    </div>
+
+                    <div class="login-remember-row-modern">
+                        <label class="login-remember-label-modern">
+                            <input type="checkbox" id="remember-me" name="remember-me">
+                            <span>Remember Me</span>
+                        </label>
+                    </div>
+
+                    <input type="submit" class="login-button-modern" value="Login">
+                </form>
+
+                <p class="login-link-modern"><a href="/forgotpassword">Forgot Password?</a></p>
+                <p class="login-link-modern"><a href="/registration">Don't have an account yet? Create an account</a></p>
+            </div>
         </div>
     </div>
-
-    <div class="vertical-line-reg"></div>
-    
-    <div class="right-reg">
-        <p class="main"><b>Login</b></p>
-        <form name="read-user" action="read-user" method="post" onsubmit="return submitLoginForm()">
-            <div class="form-group">
-                <input name="username" id="username-field" type="text" placeholder="Username"></input>
-            </div>
-            <div class="form-group">
-                <input name="password" id="password-field" type="password" placeholder="Password"></input>
-                <img src="https://i.imgocean.com/eye-close6c91a6ac25495e1f.png" alt="eye" id="toggle-password" onclick="togglePasswordVisibility('password-field', 'toggle-password')">
-            </div>
-            <div class="form-group">
-                <input type="checkbox" id="remember-me" name="remember-me">
-                <label for="remember-me">Remember Me</label>
-            </div>
-            <input type="submit" class="registration" value="Login"></input>
-        </form>
-        <p class="forgot-page"><a href="/forgotpassword">Forgot Password?</a></p>
-        <p class="signup-page"><a href="/registration">Don't have an account yet? Create an account</a></p>
-    
-    </div>
-
 </div>
-
-</body>

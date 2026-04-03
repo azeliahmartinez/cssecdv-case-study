@@ -1,14 +1,18 @@
 // function to make password visible or not
 function togglePasswordVisibility(passwordFieldId, toggleIconId) {
-    let passwordField = document.getElementById(passwordFieldId);
-    let toggleIcon = document.getElementById(toggleIconId);
+    const passwordField = document.getElementById(passwordFieldId);
+    const toggleIcon = document.getElementById(toggleIconId);
+
+    if (!passwordField || !toggleIcon) return;
 
     if (passwordField.type === "password") {
         passwordField.type = "text";
-        toggleIcon.src = "https://i.imgocean.com/eye-openf95409e2a49605ae.png";
+        toggleIcon.classList.remove("fa-eye-slash");
+        toggleIcon.classList.add("fa-eye");
     } else {
         passwordField.type = "password";
-        toggleIcon.src = "https://i.imgocean.com/eye-close6c91a6ac25495e1f.png";
+        toggleIcon.classList.remove("fa-eye");
+        toggleIcon.classList.add("fa-eye-slash");
     }
 }
 
@@ -20,7 +24,6 @@ function submitForm() {
     let bioString = document.forms["create-user"]["bio"].value;
     let pass1String = document.forms["create-user"]["password"].value;
     let pass2String = document.forms["create-user"]["password2"].value;
-    let userType = document.querySelector('input[name="userType"]:checked').value;
     const passwordRegex = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)[a-zA-Z\d]{8,}$/;
 
     if (nameString.length < 1) {
@@ -53,8 +56,7 @@ function submitForm() {
             username: usernameString,
             bio: bioString,
             email: emailString,
-            password: pass1String,
-            userType: userType
+            password: pass1String
         })
     })
     .then(response => {

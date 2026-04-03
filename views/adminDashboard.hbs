@@ -36,9 +36,22 @@
                             <input type="email" name="email" placeholder="Enter email" required>
                         </div>
 
-                        <div class="admin-form-field">
+                        <div class="admin-form-field admin-password-field">
                             <label>Password</label>
-                            <input type="password" name="password" placeholder="Enter password" required>
+                            <div class="admin-password-input-wrap">
+                                <input
+                                    type="password"
+                                    id="admin-create-password-field"
+                                    name="password"
+                                    placeholder="Enter password"
+                                    required
+                                >
+                                <i
+                                id="admin-create-password-toggle"
+                                class="fa fa-eye-slash admin-password-toggle"
+                                onclick="togglePasswordVisibility('admin-create-password-field', 'admin-create-password-toggle')"
+                                ></i>
+                            </div>
                         </div>
 
                         <div class="admin-form-field admin-form-field-full">

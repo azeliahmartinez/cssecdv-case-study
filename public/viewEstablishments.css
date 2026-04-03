@@ -640,3 +640,42 @@ a{
         align-items: stretch;
     }
 }
+
+.admin-password-input-wrap {
+    position: relative;
+    width: 100%;
+}
+
+.admin-password-input-wrap input {
+    padding-right: 52px;
+}
+
+.admin-password-input-wrap img {
+    width: 22px;
+    height: 22px;
+    object-fit: contain;
+    position: absolute;
+    right: 16px;
+    top: 50%;
+    transform: translateY(-50%);
+    cursor: pointer;
+    opacity: 0.75;
+}
+
+.admin-password-input-wrap img:hover {
+    opacity: 1;
+}
+
+.admin-password-toggle {
+    position: absolute;
+    right: 16px;
+    top: 50%;
+    transform: translateY(-50%);
+    cursor: pointer;
+    color: #8c817b;
+    font-size: 18px;
+}
+
+.admin-password-toggle:hover {
+    color: #6a4b3f;
+}
