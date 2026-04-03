@@ -8,9 +8,27 @@ document.addEventListener("DOMContentLoaded", function() {
 
 // function to show logout dropdown in header
 function toggleOptions(event) {
-    const dropdown = event.target.nextElementSibling;
-    dropdown.classList.add("show");
+    event.stopPropagation();
+
+    const button = event.currentTarget;
+    const dropdown = button.nextElementSibling;
+
+    if (!dropdown) return;
+
+    document.querySelectorAll(".avatar-dropdown-content").forEach(menu => {
+        if (menu !== dropdown) {
+            menu.classList.remove("show");
+        }
+    });
+
+    dropdown.classList.toggle("show");
 }
+
+document.addEventListener("click", function () {
+    document.querySelectorAll(".avatar-dropdown-content").forEach(menu => {
+        menu.classList.remove("show");
+    });
+});
 
 // function when logging out
 function logout() {
