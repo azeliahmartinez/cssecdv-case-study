@@ -1,28 +1,23 @@
-<div class="review-container">
-    
-    <div class="review-photo-box"  id="photo-preview">
-        <img class="review-photo" src="{{review_photo}}" alt="Review Picture">
-    </div>
-
+<div class="review-container review-container-no-photo">
     <div class="review-details">
 
         {{#if (eq username currentUser)}}
         <div class="review-menu">
             <button class="reaction-btn review-option" onclick="showEditReviewWidget('{{_id}}')">
-                <i class="fa fa-pencil" aria-hidden="true"></i> 
+                <i class="fa fa-pencil" aria-hidden="true"></i>
             </button>
-    
+
             <button class="reaction-btn review-option" onclick="removeReview('{{_id}}')">
-                <i class="fa fa-trash" aria-hidden="true"></i> 
+                <i class="fa fa-trash" aria-hidden="true"></i>
             </button>
         </div>
 
-        <!-- edit review  widget -->
-        <div id="edit-widget-{{_id}}" class="edit-widget-container" >
+        <div id="edit-widget-{{_id}}" class="edit-widget-container">
             <div class="edit-establishmentwidget">
                 <button class="close-button" onclick="hideEditReviewWidget('{{_id}}')">X</button>
-               <form name="editForm-{{_id}}" id="editForm-{{_id}}" method="POST" data-review-id="{{_id}}" onsubmit="return editReview('{{_id}}')">
+                <form name="editForm-{{_id}}" id="editForm-{{_id}}" method="POST" data-review-id="{{_id}}" onsubmit="return editReview('{{_id}}')">
                     <p class="main"><b>Edit Review Details</b></p>
+
                     <div class="edit-review-rating">
                         <div class="review-rating">
                             <span class="fa fa-star" data-rating="1"></span>
@@ -32,31 +27,35 @@
                             <span class="fa fa-star" data-rating="5"></span>
                         </div>
                     </div>
+
                     <div class="info-item">
                         <input type="text" name="review_location" id="location-field" value="{{place_name}}" hidden>
                     </div>
+
                     <div class="info-item">
                         <label for="review-title">Review Title</label>
                         <input type="text" id="review_title" name="review_title" value="{{review_title}}" placeholder="Update review title">
                     </div>
+
                     <div class="info-item">
                         <label for="description">Description</label>
                         <input type="text" id="caption" name="description" value="{{caption}}" placeholder="Update review description" onshow="autoExpand(this)">
                     </div>
+
                     <div class="establishment-options">
-                        <input type="submit" value="Save" id="save-details"></input>
+                        <input type="submit" value="Save" id="save-details">
                     </div>
                 </form>
-
             </div>
         </div>
         {{/if}}
 
-        <div onclick="redirectToProfile('{{username}}')" class="user-profile-establishment">
-            {{> redirectProfile}}
+        <div class="review-header-row">
+            <div onclick="redirectToProfile('{{username}}')" class="user-profile-establishment review-user-block">
+                {{> redirectProfile}}
+            </div>
         </div>
 
-        <!-- review section -->
         <div class="review-data">
             <div class="dynamic-star-rating star-rating" data-rating="{{rating}}"></div>
             <p class="title">{{review_title}}</p>
@@ -64,43 +63,43 @@
             <p class="date-posted">{{date_posted}}</p>
         </div>
 
-        <!-- reactions section -->
         {{#if isLoggedIn}}
         <div class="reactions">
-                <button class="reaction-btn helpful"><i class="fa fa-thumbs-up" aria-hidden="true"></i> This was helpful!</button>
-                <button class="reaction-btn not-helpful"><i class="fa fa-thumbs-down" aria-hidden="true"></i> This was not helpful</button>
-        
+            <button class="reaction-btn helpful"><i class="fa fa-thumbs-up" aria-hidden="true"></i> This was helpful!</button>
+            <button class="reaction-btn not-helpful"><i class="fa fa-thumbs-down" aria-hidden="true"></i> This was not helpful</button>
         </div>
         {{/if}}
 
-       <!-- comment section -->
         <div class="comment-section" id="commentSection">
-        {{#each comments}}
-        <div class="user-profile-establishment">
-            <img src="{{user_icon}}" alt="{{username}}">
-            <div class="profile-text">
-            <span class="username">{{username}}</span>
-        
-            <span class="comment-box">{{comment}}</span>
+            {{#each comments}}
+            <div class="comment-item">
+                <div class="user-profile-establishment">
+                    <img src="{{user_icon}}" alt="{{username}}">
+                    <div class="profile-text">
+                        <span class="username">{{username}}</span>
+                        <span class="comment-box">{{comment}}</span>
+                    </div>
+                </div>
             </div>
+            {{/each}}
         </div>
-        {{/each}}
-        </div>
-
 
         {{#if isLoggedIn}}
-        <!-- Write a comment -->
-                <div class="comment-box" data-review-id="{{_id}}">
-                    <div class="user-profile-comment">
-                        <img src="{{currentUserIcon}}" alt="user">
-                    </div> 
-                   <div class="comment-content">
-                    <textarea type="text" class="comment-input" placeholder="Reply to a Coffeed Buddy!"></textarea>
-                    <button class="post-comment-button">Comment</button>
-                </div>
+        <div class="comment-box review-comment-box" data-review-id="{{_id}}">
+            <div class="user-profile-comment">
+                <img
+                    src="{{currentUserIcon}}"
+                    alt="user"
+                    onerror="this.onerror=null;this.src='/images/admin-icon.png';"
+                >
+            </div>
+
+            <div class="comment-content">
+                <textarea type="text" class="comment-input" placeholder="Reply to a Coffeed Buddy!"></textarea>
+                <button class="post-comment-button">Comment</button>
+            </div>
         </div>
         {{/if}}
 
     </div>
-
 </div>

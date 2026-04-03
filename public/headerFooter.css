@@ -72,10 +72,11 @@ a{
 }
 
 .header-right {
-    width:55%;
-    display:flex;
+    width: 55%;
+    display: flex;
     align-items: center;
-    justify-content: space-evenly;
+    justify-content: flex-end;
+    gap: 44px;
 }
 
 .header-button { 
@@ -98,10 +99,6 @@ a{
 
 .header-button:hover {
     color: #523D35;
-}
-
-.header-profile {
-margin-right: 0;
 }
 
 .login-box{
@@ -142,4 +139,81 @@ margin-right: 0;
     font-family: 'Biryani', sans-serif;
     font-size: 12px;
     color: darkgray;
+}
+
+/* clean username dropdown */
+.header-profile {
+    position: relative;
+    display: inline-flex;
+    align-items: center;
+}
+
+.avatar-button {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    cursor: pointer;
+}
+
+.avatar-button .header-text {
+    margin: 0 !important;
+    padding: 0 !important;
+    white-space: nowrap;
+    color: white;
+}
+
+.dropdown-arrow {
+    color: white !important;
+    font-size: 12px !important;
+    line-height: 1;
+    display: inline-block;
+    vertical-align: middle;
+}
+
+/* hide old avatar images everywhere */
+.header-profile img,
+.avatar-button img,
+.box-item img {
+    display: none !important;
+}
+
+/* actual dropdown */
+.avatar-dropdown-content {
+    display: none;
+    position: absolute;
+    top: calc(100% + 10px);
+    right: 0;
+    min-width: 170px;
+    background: #fffaf5;
+    border: 1px solid rgba(82, 61, 53, 0.12);
+    border-radius: 14px;
+    box-shadow: 0 14px 28px rgba(47, 59, 59, 0.10);
+    overflow: hidden;
+    z-index: 9999;
+}
+
+.avatar-dropdown-content button {
+    width: 100%;
+    padding: 14px 16px;
+    border: none;
+    background: #fffaf5;
+    color: #523D35;
+    font-family: Inter, ui-sans-serif, system-ui, sans-serif;
+    font-size: 0.95rem;
+    font-weight: 600;
+    text-align: left;
+    cursor: pointer;
+}
+
+.avatar-dropdown-content button:hover {
+    background: #f3ebe3;
+}
+
+.dropdown-arrow {
+    display: inline-block;
+    color: #ffffff;
+    font-size: 14px;
+    line-height: 1;
+    margin-left: 6px;
+    font-weight: 700;
 }

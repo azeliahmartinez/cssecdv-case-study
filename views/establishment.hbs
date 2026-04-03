@@ -1,9 +1,11 @@
 <!-- container for the header -->
 <div class="parent-header">
-    {{#if isLoggedIn}}
-        {{#if isOwner}}
+    {{#if currentUser}}
+        {{#if (eq currentUserType "admin")}}
+            {{> headerAdmin}}
+        {{else if (eq currentUserType "owner")}}
             {{> headerOwner}}
-        {{else if isRater}}
+        {{else if (eq currentUserType "rater")}}
             {{> headerUser}}
         {{else}}
             {{> headerNonUser}}
@@ -22,7 +24,11 @@
 
         <!--Establishment header photo-->
         <div class="establishment-main-photo">
-            <img src={{establishment.banner_image}} alt="establishment banner">
+            <img
+                src="{{establishment.banner_image}}"
+                alt="{{establishment.establishment_name}} banner"
+                onerror="this.onerror=null;this.src='/images/establishment-fallback.png';"
+            >
         </div>
 
         <!--Establishment box that contains basic info (name, overall rating, location)-->
@@ -71,13 +77,15 @@
                 {{#if isRater}}
                 <div class="write-review">
                     <div class="write-review-container">
-                        <!-- user icon -->
-                        <div class="user-profile-establishment">
-                            <img src="{{currentUserIcon}}" alt="user">
-                        </div> 
+                        <div class="write-review-user">
+                            <img
+                                src="{{currentUserIcon}}"
+                                alt="user"
+                                onerror="this.onerror=null;this.src='/images/admin-icon.png';"
+                            >
+                        </div>
 
-                        <form name="post-form" method="post" id="post-form" enctype="multipart/form-data">
-                            <!-- star rating -->
+                        <form name="post-form" method="post" id="post-form" enctype="multipart/form-data" class="write-review-form">
                             <div class="write-review-rating">
                                 <div class="review-rating">
                                     <span class="fa fa-star" data-rating="1"></span>
@@ -87,32 +95,36 @@
                                     <span class="fa fa-star" data-rating="5"></span>
                                 </div>
                             </div>
-                            
-                            <!-- review location, title & description -->
+
                             <input type="text" name="place_name" class="review-location" id="review-location" value="{{establishment.establishment_name}}" hidden>
-                            <input type="text" name="review_title" class="review-title" id="review-title" placeholder="Enter your review title" required>
-                            <input type="text" name="caption" class="review-description" id="review-description" placeholder="Sip, Snap, Share your Coffee Story!" oninput="autoExpand(this)"></input>
 
-                            <hr class="write-review-hr">
-                            
-                            <!-- photo upload and date -->
-                            <div class="photo-upload-date">
-                                <!-- photo upload -->
-                                <div class="photo-upload-container">
-                                    <input type="file" accept="image/*" id="photo-upload" class="photo-upload" name="review_photo" onchange="previewPhoto(event)">
-                                    <label for="photo-upload" class="photo-upload-label">
-                                        <i class="fa fa-camera"></i> Upload Photo
-                                    </label>
-                                </div>
-                                <div class="photo-preview" id="photo-preview"></div>
+                            <input
+                                type="text"
+                                name="review_title"
+                                class="review-title"
+                                id="review-title"
+                                placeholder="Enter your review title"
+                                required
+                            >
 
-                                <!-- date -->
-                                <div class="date-and-submit">
-                                    <input type="datetime-local" id="post-date" readonly>                                    
+                            <textarea
+                                name="caption"
+                                class="review-description"
+                                id="review-description"
+                                placeholder="Sip, Snap, Share your Coffee Story!"
+                                rows="4"
+                            ></textarea>
+
+                            <div class="write-review-footer">
+                                <div class="write-review-footer">
+                                    <div class="write-review-meta">
+                                        <div class="date-and-submit">
+                                            <input type="datetime-local" id="post-date" readonly>
+                                        </div>
+                                    </div>
+
+                                    <input type="button" onclick="submitReview()" class="post-review-button" value="Post Review">
                                 </div>
-                    
-                                <!-- submit button -->
-                                <input type="button" onclick="submitReview()" class="post-review-button" value="Post Review"></input>
                             </div>
                         </form>
                     </div>
@@ -314,11 +326,21 @@
                         <!-- photo grid -->
                         <div class="photo-grid">
                             <div class="row">
-                                {{#each establishment.establishment_images}}
-                                <div class="column">
-                                    <img src="{{this}}" alt="Establishment Image">
-                                </div>
-                                {{/each}}
+                                {{#if establishment.establishment_images.length}}
+                                    {{#each establishment.establishment_images}}
+                                    <div class="column">
+                                        <img
+                                            src="{{this}}"
+                                            alt="Establishment Image"
+                                            onerror="this.onerror=null;this.src='/images/establishment-fallback.png';"
+                                        >
+                                    </div>
+                                    {{/each}}
+                                {{else}}
+                                    <div class="column column-full">
+                                        <div class="empty-photo-state">No additional photos yet</div>
+                                    </div>
+                                {{/if}}
                             </div>
                         </div>
                     </div>

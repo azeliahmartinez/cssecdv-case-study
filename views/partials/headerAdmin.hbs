@@ -33,12 +33,10 @@
 
                 <div class="header-profile">
                     <div class="avatar-button" onclick="toggleOptions(event)">
-                        <div class="box-item">
-                            <span class="header-text">{{currentUser}}</span>
-                            <img src="{{currentUserIcon}}" alt="admin icon">
-                        </div>
-                        <i class="fa fa-chevron-down"></i>
+                        <span class="header-text">{{currentUser}}</span>
+                        <span class="dropdown-arrow">▾</span>
                     </div>
+
                     <div class="avatar-dropdown-content" id="myDropdown">
                         <button onclick="window.location.href='/admin/dashboard'">Admin Dashboard</button>
                         <button onclick="window.location.href='/forgotpassword'">Change Password</button>

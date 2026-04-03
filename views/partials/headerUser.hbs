@@ -36,13 +36,12 @@
         
                 <div class="header-profile">
                     <div class="avatar-button" onclick="toggleOptions(event)">
-                        <div class="box-item">
-                         <a class="header-text"  onclick="redirectToProfile('{{currentUser}}')"></strong>{{currentUser}}</strong></a>
-                            <img src="{{currentUserIcon}}" alt="user icon">
-                        </div>
-                        <i class="fa fa-chevron-down"></i> 
+                        <a class="header-text" onclick="event.stopPropagation(); redirectToProfile('{{currentUser}}')">{{currentUser}}</a>
+                        <span class="dropdown-arrow">▾</span>
                     </div>
+
                     <div class="avatar-dropdown-content" id="myDropdown">
+                        <button onclick="window.location.href='/forgotpassword'">Change Password</button>
                         <button onclick="logout()">Logout</button>
                     </div>
                 </div>
