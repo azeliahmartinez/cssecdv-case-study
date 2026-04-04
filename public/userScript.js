@@ -24,6 +24,7 @@ function submitForm() {
     let bioString = document.forms["create-user"]["bio"].value;
     let pass1String = document.forms["create-user"]["password"].value;
     let pass2String = document.forms["create-user"]["password2"].value;
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
     const passwordRegex = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)[a-zA-Z\d]{8,}$/;
 
     if (nameString.length < 1) {
@@ -32,7 +33,11 @@ function submitForm() {
     } else if (emailString.length < 1) {
         alert("Email cannot be empty");
         return false;
-    } else if (usernameString.length < 1) {
+    } else if (!emailRegex.test(emailString)) {
+        alert("Please enter a valid email address");
+        return false;
+    }
+      else if (usernameString.length < 1) {
         alert("Username cannot be empty");
         return false;
     } else if (pass1String !== pass2String) {
