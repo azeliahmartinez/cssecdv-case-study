@@ -477,5 +477,28 @@ function submitAdminDeleteUserForm(event, form, userId) {
     return false;
 }
 
+function submitForgotPasswordForm() {
+    let email = document.getElementById("email-field").value;
 
+    if (!email) {
+        alert("Email required");
+        return false;
+    }
+
+    fetch('/forgot-password', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email })
+    })
+    .then(res => res.json())
+    .then(data => {
+        if (data.success) {
+            window.location.href = data.redirect;
+        } else {
+            alert(data.message);
+        }
+    });
+
+    return false;
+}
 

@@ -28,7 +28,9 @@ rememberMeTokenExpires: Date,
 loginAttempts: { type: Number, default: 0 },
 lockUntil: { type: Date },
 passwordHistory: { type: [String], default: [] },
-passwordChangedAt: { type: Date }
+passwordChangedAt: { type: Date },
+resetPasswordToken: String,
+resetPasswordExpires: Date
 }, { versionKey: false });
 
 // user model

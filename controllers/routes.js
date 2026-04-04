@@ -403,7 +403,94 @@ function addRoutes(server) {
     });
   });
 
-  
+  router.post('/forgot-password', async (req, res) => {
+  try {
+    const { email } = req.body;
+
+    const user = await userModel.findOne({ email });
+
+    if (!user) {
+      return res.json({ success: false, message: 'Email not found' });
+    }
+
+    const token = Math.random().toString(36).substring(2);
+
+    user.resetPasswordToken = token;
+    user.resetPasswordExpires = Date.now() + (15 * 60 * 1000);
+
+    await user.save();
+
+    return res.json({
+      success: true,
+      redirect: `/reset-password/${token}`
+    });
+
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ success: false });
+  }
+});
+
+router.get('/reset-password/:token', async (req, res) => {
+  try {
+    const user = await userModel.findOne({
+      resetPasswordToken: req.params.token,
+      resetPasswordExpires: { $gt: Date.now() }
+    });
+
+    if (!user) {
+      return res.send("Invalid or expired token");
+    }
+
+    res.render('resetPassword', {
+      layout: 'index',
+      title: 'Reset Password'
+    });
+
+  } catch (err) {
+    console.error(err);
+    res.status(500).send("Server error");
+  }
+});
+
+router.post('/reset-password/:token', async (req, res) => {
+  try {
+    const { password } = req.body;
+
+    const user = await userModel.findOne({
+      resetPasswordToken: req.params.token,
+      resetPasswordExpires: { $gt: Date.now() }
+    });
+
+    if (!user) {
+      return res.json({ success: false, message: 'Invalid or expired token' });
+    }
+
+    if (!PASSWORD_REGEX.test(password)) {
+      return res.json({
+        success: false,
+        message: 'Password must meet requirements'
+      });
+    }
+
+    const hashedPassword = await bcrypt.hash(password, 10);
+
+    user.password = hashedPassword;
+    user.resetPasswordToken = null;
+    user.resetPasswordExpires = null;
+
+    await user.save();
+
+    await logAction(req, `Password reset via email: ${user.email}`);
+
+    res.json({ success: true, message: 'Password reset successful' });
+
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ success: false });
+  }
+});
+
 router.post('/change-password', requireAuth, async function(req, resp) {
   try {
     const { currentPassword, newPassword } = req.body;
@@ -469,41 +556,11 @@ router.post('/change-password', requireAuth, async function(req, resp) {
   }
 });
   
-router.post('/forgot-password-email', async function(req, resp) {
-  try {
-    const { email, newPassword } = req.body;
-
-    const user = await userModel.findOne({ email });
-
-    if (!user) {
-      return resp.json({ success: false, message: 'Email not found' });
-    }
-
-    if (!PASSWORD_REGEX.test(newPassword)) {
-      return resp.json({
-        success: false,
-        message: 'Password must meet requirements'
-      });
-    }
-
-    const hashedPassword = await bcrypt.hash(newPassword, 10);
-
-    user.password = hashedPassword;
-    user.passwordChangedAt = Date.now();
-
-    await user.save();
-
-    await logAction(req, `Password reset via email: ${email}`);
-
-    return resp.json({
-      success: true,
-      message: 'Password reset successful'
-    });
-
-  } catch (err) {
-    console.error(err);
-    resp.status(500).json({ success: false });
-  }
+router.get('/change-password-page', requireAuth, function (req, res) {
+  res.render('changePassword', {
+    layout: 'index',
+    title: 'Change Password'
+  });
 });
 
   // route for user view homepage
