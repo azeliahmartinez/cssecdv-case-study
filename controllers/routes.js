@@ -16,8 +16,9 @@ async function logAction(req, actionText) {
   try {
     await auditModel.create({
       action: actionText,
-      user: req.session.username || 'Unknown',
-      role: req.session.userType || 'Unknown'
+      user: req?.session?.username || 'System',
+      role: req?.session?.userType || 'System',
+      timestamp: new Date()
     });
   } catch (err) {
     console.error('Audit log error:', err);
@@ -373,7 +374,7 @@ router.post('/read-user', async function(req, resp) {
       });
     }
 
-    await logAction(req, `User logged in`);
+    await logAction(req, `User logged in: ${req.session.username}`);
 
     // REDIRECT
     if (user.userType === 'admin') {
@@ -998,7 +999,51 @@ router.post('/admin/change-role',
     }
 });
 
+router.get('/admin/audit',
+  requireAuth,
+  requireRole('admin'),
+  async (req, res) => {
 
+  try {
+    const { user, role, action, startDate, endDate } = req.query;
+
+    let filter = {};
+
+    if (user) {
+      filter.user = { $regex: user, $options: 'i' };
+    }
+
+    if (role) {
+      filter.role = role;
+    }
+
+    if (action) {
+      filter.action = { $regex: action, $options: 'i' };
+    }
+
+    if (startDate || endDate) {
+      filter.timestamp = {};
+      if (startDate) filter.timestamp.$gte = new Date(startDate);
+      if (endDate) filter.timestamp.$lte = new Date(endDate);
+    }
+
+    const logs = await auditModel
+      .find(filter)
+      .sort({ timestamp: -1 })
+      .lean();
+
+    res.render('audit', {
+      layout: 'index',
+      logs,
+      currentUser: req.session.username,
+      currentUserType: req.session.userType
+    });
+
+  } catch (err) {
+    console.error(err);
+    res.status(500).send('Audit page error');
+  }
+});
 
 async function checkOwnership(req, res, next) {
   try {

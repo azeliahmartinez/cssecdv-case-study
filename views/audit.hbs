@@ -1,0 +1,52 @@
+<div class="parent-header">
+    {{> headerAdmin}}
+</div>
+
+<div class="owner-dashboard-page">
+    <div class="owner-dashboard-shell">
+
+        <div class="owner-dashboard-header">
+            <h1>Audit Trails</h1>
+            <p class="owner-subtext">Track all system activities and filter logs.</p>
+        </div>
+
+        <!-- FILTERS -->
+        <form method="GET" action="/admin/audit" class="admin-filter-form">
+
+            <input type="text" name="user" placeholder="Filter by user">
+
+            <select name="role">
+                <option value="">All Roles</option>
+                <option value="admin">Admin</option>
+                <option value="owner">Manager</option>
+                <option value="rater">Customer</option>
+            </select>
+
+            <input type="text" name="action" placeholder="Search action">
+
+            <input type="date" name="startDate">
+            <input type="date" name="endDate">
+
+            <button type="submit">Apply Filters</button>
+        </form>
+
+        <!-- LOGS -->
+        <div class="admin-log-list">
+            {{#if logs.length}}
+                {{#each logs}}
+                <div class="admin-log-item">
+                    <div><b>{{user}}</b> ({{role}})</div>
+                    <div>{{action}}</div>
+                    <div style="font-size:12px;color:gray;">
+                        {{timestamp}}
+                    </div>
+                </div>
+                <hr>
+                {{/each}}
+            {{else}}
+                <div>No logs found.</div>
+            {{/if}}
+        </div>
+
+    </div>
+</div>

@@ -679,3 +679,89 @@ a{
 .admin-password-toggle:hover {
     color: #6a4b3f;
 }
+
+/* =========================
+   AUDIT FILTER SECTION
+   ========================= */
+
+.admin-filter-form {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 12px;
+    margin-bottom: 20px;
+    padding: 20px;
+
+    background: #fffaf5;
+    border-radius: 16px;
+    box-shadow: 0 10px 25px rgba(47, 59, 59, 0.08);
+    border: 1px solid rgba(82, 61, 53, 0.1);
+}
+
+/* inputs */
+.admin-filter-form input,
+.admin-filter-form select {
+    padding: 10px 14px;
+    border-radius: 10px;
+    border: 1px solid #e5d9ce;
+    background-color: #ffffff;
+
+    font-family: 'Biryani', sans-serif;
+    font-size: 14px;
+    color: #523D35;
+
+    transition: all 0.2s ease;
+}
+
+/* focus state */
+.admin-filter-form input:focus,
+.admin-filter-form select:focus {
+    outline: none;
+    border-color: #523D35;
+    box-shadow: 0 0 0 2px rgba(82, 61, 53, 0.1);
+}
+
+/* date inputs same size */
+.admin-filter-form input[type="date"] {
+    min-width: 150px;
+}
+
+/* button */
+.admin-filter-form button {
+    background-color: #523D35;
+    color: white;
+    border: none;
+    border-radius: 12px;
+
+    padding: 10px 18px;
+    font-weight: 600;
+    font-family: 'Biryani', sans-serif;
+
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+/* hover */
+.admin-filter-form button:hover {
+    background-color: #3f2f29;
+}
+
+/* =========================
+   LOG ITEMS (OPTIONAL UPGRADE)
+   ========================= */
+
+.admin-log-item {
+    background: #fffaf5;
+    border-radius: 12px;
+    padding: 14px 18px;
+    margin-bottom: 10px;
+
+    border: 1px solid rgba(82, 61, 53, 0.08);
+    box-shadow: 0 6px 12px rgba(47, 59, 59, 0.05);
+}
+
+/* subtle divider */
+.admin-log-item hr {
+    border: none;
+    border-top: 1px solid #e5d9ce;
+    margin: 10px 0;
+}

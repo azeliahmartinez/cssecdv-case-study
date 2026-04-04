@@ -79,10 +79,10 @@
                         <span class="admin-action-subtext">Update your administrator password.</span>
                     </a>
 
-                    <div class="admin-action-tile admin-action-tile-muted">
-                        <span class="admin-action-title">Audit Trails</span>
-                        <span class="admin-action-subtext">Frontend section ready. Connect backend audit-log route next.</span>
-                    </div>
+                <a class="admin-action-tile" href="/admin/audit">
+                    <span class="admin-action-title">Audit Trails</span>
+                    <span class="admin-action-subtext">View and filter system activity logs.</span>
+                </a>
 
                     <a class="admin-action-tile" href="/owner/establishments">
                         <span class="admin-action-title">Manage Establishments</span>
@@ -143,32 +143,6 @@
                         {{/each}}
                     </tbody>
                 </table>
-            </div>
-        </div>
-
-        <div class="owner-table-card admin-logs-card">
-            <div class="admin-panel-header admin-table-header">
-                <div>
-                    <p class="owner-eyebrow">Audit</p>
-                    <h2>Audit Trails</h2>
-                </div>
-            </div>
-
-            <div class="admin-log-list">
-            {{#if logs.length}}
-                {{#each logs}}
-                <div class="admin-log-item">
-                    <div><b>{{user}}</b> ({{role}})</div>
-                    <div>{{action}}</div>
-                    <div style="font-size: 12px; color: gray;">
-                    {{timestamp}}
-                    </div>
-                </div>
-                <hr>
-                {{/each}}
-            {{else}}
-                <div>No audit logs available.</div>
-            {{/if}}
             </div>
         </div>
     </div>
