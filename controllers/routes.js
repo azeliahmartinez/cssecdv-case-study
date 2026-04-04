@@ -466,6 +466,18 @@ router.post('/reset-password/:token', async (req, res) => {
     if (!user) {
       return res.json({ success: false, message: 'Invalid or expired token' });
     }
+    // 🚫 PREVENT FREQUENT PASSWORD CHANGE (1 DAY RULE)
+    if (user.passwordChangedAt) {
+      const oneDay = 24 * 60 * 60 * 1000;
+      const timeSinceLastChange = Date.now() - new Date(user.passwordChangedAt).getTime();
+
+      if (timeSinceLastChange < oneDay) {
+        return resp.json({
+          success: false,
+          message: 'You can only change your password once every 24 hours'
+        });
+      }
+    }
 
     // PASSWORD COMPLEXITY (same as change password)
     if (!PASSWORD_REGEX.test(password)) {
@@ -526,6 +538,18 @@ router.post('/change-password', requireAuth, async function(req, resp) {
       return resp.json({ success: false, message: 'User not found' });
     }
 
+    // 🚫 PREVENT FREQUENT PASSWORD CHANGE (1 DAY RULE)
+    if (user.passwordChangedAt) {
+      const oneDay = 24 * 60 * 60 * 1000;
+      const timeSinceLastChange = Date.now() - new Date(user.passwordChangedAt).getTime();
+
+      if (timeSinceLastChange < oneDay) {
+        return resp.json({
+          success: false,
+          message: 'You can only change your password once every 24 hours'
+        });
+      }
+    }
     // VERIFY CURRENT PASSWORD
     const match = await bcrypt.compare(currentPassword, user.password);
     if (!match) {
