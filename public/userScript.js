@@ -156,7 +156,7 @@ function submitLoginForm() {
         if (data && data.success) {
             window.location.href = data.redirect || '/landingPage';
         } else {
-            alert('username and password do not match');
+            alert(data.message || 'username and password do not match');
         }
     })
     .catch(error => {
@@ -495,7 +495,7 @@ function submitForgotPasswordForm() {
         if (data.success) {
             window.location.href = data.redirect;
         } else {
-            alert(data.message);
+             alert(data.message);
         }
     });
 

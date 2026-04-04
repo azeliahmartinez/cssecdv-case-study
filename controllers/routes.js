@@ -302,86 +302,91 @@ function addRoutes(server) {
     });
   });
   // route for reading user from the database to login
-    router.post('/read-user', async function(req, resp) {
-    try {
-      const { username, password, rememberMe } = req.body;
+router.post('/read-user', async function(req, resp) {
+  try {
+    const { username, password, rememberMe } = req.body;
 
-      console.log("\nREMEMBER ME CHECKED? " + rememberMe);
+    const user = await userModel.findOne({ username });
 
-      const user = await userModel.findOne({ username });
+    if (!user) {
+      return resp.json({ success: false, message: 'Invalid credentials' });
+    }
 
-      console.log("\nFinding user: ", username);
+    // CHECK IF ACCOUNT IS LOCKED
+    if (user.lockUntil && user.lockUntil > Date.now()) {
+      return resp.json({
+        success: false,
+        message: 'Account is locked. Try again later.'
+      });
+    }
 
-      if (!user) {
-        console.log("\nUser not found: ", username);
-        return resp.json({ success: false });
+    const passwordMatch = await bcrypt.compare(password, user.password);
+
+    // WRONG PASSWORD
+    if (!passwordMatch) {
+      user.loginAttempts += 1;
+
+      // LOCK AFTER 5 ATTEMPTS
+      if (user.loginAttempts >= 5) {
+        user.lockUntil = Date.now() + (15 * 60 * 1000); // 15 mins
+
+        await logAction(req, `Account locked: ${user.username}`);
       }
 
-      if (user.lockUntil && user.lockUntil > Date.now()) {
-        return resp.json({
-          success: false,
-          message: 'Account locked. Try again later.'
-        });
-      }
-
-      const passwordMatch = await bcrypt.compare(password, user.password);
-
-      if (!passwordMatch) {
-        user.loginAttempts += 1;
-
-        if (user.loginAttempts >= 5) {
-          user.lockUntil = Date.now() + (15 * 60 * 1000); // 15 mins
-          await logAction(req, `Account locked: ${user.username}`);
-        }
-
-        await user.save();
-        return resp.json({ success: false });
-      }
-
-      // SESSION SETUP
-      req.session.username = user.username;
-      req.session.name = user.name;
-      req.session.user_icon = user.userType === 'admin'
-        ? '/images/admin-icon.png'
-        : user.user_icon;
-      req.session.userType = user.userType;
-
-      // REMEMBER ME
-      if (rememberMe === 'on') {
-        req.session.cookie.maxAge = 1000 * 60 * 60 * 24 * 21;
-
-        const rememberMeToken = generateRememberMeToken();
-        user.rememberMeToken = rememberMeToken;
-        user.rememberMeTokenExpires = new Date(Date.now() + 30 * 24 * 60 * 60 * 1000);
-
-        resp.cookie('remember_me', rememberMeToken, {
-          expires: moment().add(30, 'days').toDate(),
-          httpOnly: true,
-        });
-      }
-
-      console.log("\nUser ", req.session.username, " Found");
-      console.log("User Type:", req.session.userType);
-
-      user.loginAttempts = 0;
-      user.lockUntil = null;
       await user.save();
 
-      // 🔥 AUDIT LOG
-      await logAction(req, `User logged in`);
-
-      // ✅ REDIRECT
-      if (user.userType === 'admin') {
-        return resp.json({ success: true, redirect: '/admin/dashboard' });
-      } else {
-        return resp.json({ success: true, redirect: '/landingPage' });
-      }
-
-    } catch (error) {
-      console.error("Error processing login:", error);
-      resp.status(500).json({ success: false, error: "Internal Server Error" });
+      return resp.json({
+        success: false,
+        message: `Invalid credentials. ${5 - user.loginAttempts} attempts left`
+      });
     }
-  });
+
+    // SUCCESS LOGIN
+
+    // RESET LOCK
+    user.loginAttempts = 0;
+    user.lockUntil = null;
+
+    await user.save();
+
+    // SESSION SETUP
+    req.session.username = user.username;
+    req.session.name = user.name;
+    req.session.user_icon = user.userType === 'admin'
+      ? '/images/admin-icon.png'
+      : user.user_icon;
+    req.session.userType = user.userType;
+
+    // REMEMBER ME
+    if (rememberMe === 'on') {
+      req.session.cookie.maxAge = 1000 * 60 * 60 * 24 * 21;
+
+      const rememberMeToken = generateRememberMeToken();
+      user.rememberMeToken = rememberMeToken;
+      user.rememberMeTokenExpires = new Date(Date.now() + 30 * 24 * 60 * 60 * 1000);
+
+      await user.save();
+
+      resp.cookie('remember_me', rememberMeToken, {
+        expires: moment().add(30, 'days').toDate(),
+        httpOnly: true,
+      });
+    }
+
+    await logAction(req, `User logged in`);
+
+    // REDIRECT
+    if (user.userType === 'admin') {
+      resp.json({ success: true, redirect: '/admin/dashboard' });
+    } else {
+      resp.json({ success: true, redirect: '/landingPage' });
+    }
+
+  } catch (error) {
+    console.error(error);
+    resp.status(500).json({ success: false });
+  }
+});
 
     // logout route
     router.get('/logout', function(req, res) {
@@ -466,20 +471,21 @@ router.post('/reset-password/:token', async (req, res) => {
     if (!user) {
       return res.json({ success: false, message: 'Invalid or expired token' });
     }
-    // 🚫 PREVENT FREQUENT PASSWORD CHANGE (1 DAY RULE)
+
+    // PREVENT FREQUENT PASSWORD CHANGE (1 DAY RULE)
     if (user.passwordChangedAt) {
       const oneDay = 24 * 60 * 60 * 1000;
       const timeSinceLastChange = Date.now() - new Date(user.passwordChangedAt).getTime();
 
       if (timeSinceLastChange < oneDay) {
-        return resp.json({
+        return res.json({
           success: false,
           message: 'You can only change your password once every 24 hours'
         });
       }
     }
 
-    // PASSWORD COMPLEXITY (same as change password)
+    // PASSWORD COMPLEXITY
     if (!PASSWORD_REGEX.test(password)) {
       return res.json({
         success: false,
@@ -487,7 +493,7 @@ router.post('/reset-password/:token', async (req, res) => {
       });
     }
 
-    // PASSWORD REUSE CHECK (same logic as change password)
+    // PASSWORD REUSE CHECK
     const isReused = await Promise.all(
       (user.passwordHistory || []).map(p => bcrypt.compare(password, p))
     );
@@ -502,7 +508,9 @@ router.post('/reset-password/:token', async (req, res) => {
     // HASH PASSWORD
     const hashedPassword = await bcrypt.hash(password, 10);
 
-    // SAVE HISTORY (same as change password)
+    // SAVE HISTORY
+    if (!user.passwordHistory) user.passwordHistory = [];
+
     user.passwordHistory.push(user.password);
     if (user.passwordHistory.length > 3) {
       user.passwordHistory.shift();
@@ -517,13 +525,20 @@ router.post('/reset-password/:token', async (req, res) => {
 
     await user.save();
 
-    await logAction(req, `Password reset via email: ${user.email}`);
+    // SAFE LOG (no session user)
+    await logAction(null, `Password reset via email: ${user.email}`);
 
-    res.json({ success: true, message: 'Password reset successful' });
+    return res.json({
+      success: true,
+      message: 'Password reset successful'
+    });
 
   } catch (err) {
     console.error(err);
-    res.status(500).json({ success: false });
+    return res.status(500).json({
+      success: false,
+      message: 'Server error'
+    });
   }
 });
 
