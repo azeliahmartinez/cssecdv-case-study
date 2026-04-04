@@ -10,8 +10,11 @@
 // git push origin main
 
 // express
+require('dotenv').config();
+
 const express = require('express');
 const server = express();
+const appSettingModel = require('./models/AppSetting');
 
 // bodyparser
 const bodyParser = require('body-parser');
@@ -82,12 +85,17 @@ server.use(express.static('public'));
 
 // mongoose
 const mongoose = require('mongoose');
-mongoose.connect("mongodb://127.0.0.1:27017/cssecdv");
+mongoose.connect(process.env.MONGODB_URI);
 
 mongoose.connection.on('connected', () => {
   console.log('\nDatabase connected successfully\n');
-  importedFiles.length = 0;
-  importJSONFilesToDB();
+
+  if (process.env.SEED_DATA === 'true') {
+    importedFiles.length = 0;
+    importJSONFilesToDB();
+  } else {
+    console.log('SEED_DATA is false. Skipping JSON import.');
+  }
 });
 
 mongoose.connection.on('error', (err) => {
@@ -238,6 +246,28 @@ function importJSONFilesToDB() {
     console.error('Error reading models folder:', err);
   }
 }
+async function runSeedOnce() {
+  try {
+    const seedFlag = await appSettingModel.findOne({ key: 'initial_seed_done' });
+
+    if (seedFlag && seedFlag.value === true) {
+      console.log('Seed already completed before. Skipping JSON import.');
+      return;
+    }
+
+    importedFiles.length = 0;
+    importJSONFilesToDB();
+
+    await appSettingModel.create({
+      key: 'initial_seed_done',
+      value: true
+    });
+
+    console.log('Initial seed completed and marked in database.');
+  } catch (err) {
+    console.error('Error during one-time seed check:', err);
+  }
+}
 
 // closing the database
 function finalClose() {
@@ -250,7 +280,7 @@ process.on('SIGTERM', finalClose);  //general termination signal
 process.on('SIGINT', finalClose);   //catches when ctrl + c is used
 process.on('SIGQUIT', finalClose); //catches other termination commands
 
-const port = process.env.PORT | 3000;
+const port = process.env.PORT || 3000;
 server.listen(port, function () {
   console.log('\nListening at port ' + port);
 });
