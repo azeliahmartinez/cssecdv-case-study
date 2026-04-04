@@ -11,7 +11,7 @@ const moment = require('moment');
 const multer = require('multer');
 const path = require('path');
 const { requireAuth, requireRole } = require('./authMiddleware');
-
+const PASSWORD_REGEX = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d).{8,}$/;
 async function logAction(req, actionText) {
   try {
     await auditModel.create({
@@ -302,131 +302,210 @@ function addRoutes(server) {
     });
   });
   // route for reading user from the database to login
-  router.post('/read-user', async function(req, resp) {
-  try {
-    const { username, password, rememberMe } = req.body;
+    router.post('/read-user', async function(req, resp) {
+    try {
+      const { username, password, rememberMe } = req.body;
 
-    console.log("\nREMEMBER ME CHECKED? " + rememberMe);
+      console.log("\nREMEMBER ME CHECKED? " + rememberMe);
+
+      const user = await userModel.findOne({ username });
+
+      console.log("\nFinding user: ", username);
+
+      if (!user) {
+        console.log("\nUser not found: ", username);
+        return resp.json({ success: false });
+      }
+
+      if (user.lockUntil && user.lockUntil > Date.now()) {
+        return resp.json({
+          success: false,
+          message: 'Account locked. Try again later.'
+        });
+      }
+
+      const passwordMatch = await bcrypt.compare(password, user.password);
+
+      if (!passwordMatch) {
+        user.loginAttempts += 1;
+
+        if (user.loginAttempts >= 5) {
+          user.lockUntil = Date.now() + (15 * 60 * 1000); // 15 mins
+          await logAction(req, `Account locked: ${user.username}`);
+        }
+
+        await user.save();
+        return resp.json({ success: false });
+      }
+
+      // SESSION SETUP
+      req.session.username = user.username;
+      req.session.name = user.name;
+      req.session.user_icon = user.userType === 'admin'
+        ? '/images/admin-icon.png'
+        : user.user_icon;
+      req.session.userType = user.userType;
+
+      // REMEMBER ME
+      if (rememberMe === 'on') {
+        req.session.cookie.maxAge = 1000 * 60 * 60 * 24 * 21;
+
+        const rememberMeToken = generateRememberMeToken();
+        user.rememberMeToken = rememberMeToken;
+        user.rememberMeTokenExpires = new Date(Date.now() + 30 * 24 * 60 * 60 * 1000);
+
+        resp.cookie('remember_me', rememberMeToken, {
+          expires: moment().add(30, 'days').toDate(),
+          httpOnly: true,
+        });
+      }
+
+      console.log("\nUser ", req.session.username, " Found");
+      console.log("User Type:", req.session.userType);
+
+      user.loginAttempts = 0;
+      user.lockUntil = null;
+      await user.save();
+
+      // 🔥 AUDIT LOG
+      await logAction(req, `User logged in`);
+
+      // ✅ REDIRECT
+      if (user.userType === 'admin') {
+        return resp.json({ success: true, redirect: '/admin/dashboard' });
+      } else {
+        return resp.json({ success: true, redirect: '/landingPage' });
+      }
+
+    } catch (error) {
+      console.error("Error processing login:", error);
+      resp.status(500).json({ success: false, error: "Internal Server Error" });
+    }
+  });
+
+    // logout route
+    router.get('/logout', function(req, res) {
+      req.session.destroy(function(error) {
+        if (error) {
+          console.error('Error destroying session:', error);
+          res.status(500).json({ success: false, message: 'Failed to logout' });
+        } else {
+          res.redirect('/');
+        }
+      });
+    });
+
+  // SHOW FORGOT PASSWORD PAGE
+  router.get('/forgotpassword', function (req, res) {
+    res.render('forgotpassword', {
+      layout: 'index',
+      title: 'Forgot Password'
+    });
+  });
+
+  
+router.post('/change-password', requireAuth, async function(req, resp) {
+  try {
+    const { currentPassword, newPassword } = req.body;
+    const username = req.session.username;
 
     const user = await userModel.findOne({ username });
 
-    console.log("\nFinding user: ", username);
-
     if (!user) {
-      console.log("\nUser not found: ", username);
-      return resp.json({ success: false });
+      return resp.json({ success: false, message: 'User not found' });
     }
 
-    const passwordMatch = await bcrypt.compare(password, user.password);
-
-    if (!passwordMatch) {
-      console.log("\nPasswords do not match for user: ", username);
-      return resp.json({ success: false });
-    }
-
-    // ✅ SESSION SETUP
-    req.session.username = user.username;
-    req.session.name = user.name;
-    req.session.user_icon = user.userType === 'admin'
-      ? '/images/admin-icon.png'
-      : user.user_icon;
-    req.session.userType = user.userType;
-
-    // ✅ REMEMBER ME
-    if (rememberMe === 'on') {
-      req.session.cookie.maxAge = 1000 * 60 * 60 * 24 * 21;
-
-      const rememberMeToken = generateRememberMeToken();
-      user.rememberMeToken = rememberMeToken;
-      user.rememberMeTokenExpires = new Date(Date.now() + 30 * 24 * 60 * 60 * 1000);
-
-      await user.save();
-
-      resp.cookie('remember_me', rememberMeToken, {
-        expires: moment().add(30, 'days').toDate(),
-        httpOnly: true,
+    // VERIFY CURRENT PASSWORD
+    const match = await bcrypt.compare(currentPassword, user.password);
+    if (!match) {
+      return resp.json({
+        success: false,
+        message: 'Current password is incorrect'
       });
     }
 
-    console.log("\nUser ", req.session.username, " Found");
-    console.log("User Type:", req.session.userType);
-
-    // 🔥 AUDIT LOG
-    await logAction(req, `User logged in`);
-
-    // ✅ REDIRECT
-    if (user.userType === 'admin') {
-      return resp.json({ success: true, redirect: '/admin/dashboard' });
-    } else {
-      return resp.json({ success: true, redirect: '/landingPage' });
+    // PASSWORD COMPLEXITY
+    if (!PASSWORD_REGEX.test(newPassword)) {
+      return resp.json({
+        success: false,
+        message: 'Password must contain uppercase, lowercase, number, and 8+ chars'
+      });
     }
 
-  } catch (error) {
-    console.error("Error processing login:", error);
-    resp.status(500).json({ success: false, error: "Internal Server Error" });
+    // PASSWORD REUSE
+    const isReused = await Promise.all(
+      (user.passwordHistory || []).map(p => bcrypt.compare(newPassword, p))
+    );
+
+    if (isReused.includes(true)) {
+      return resp.json({
+        success: false,
+        message: 'Cannot reuse previous passwords'
+      });
+    }
+
+    const hashedPassword = await bcrypt.hash(newPassword, 10);
+
+    user.passwordHistory.push(user.password);
+    if (user.passwordHistory.length > 3) {
+      user.passwordHistory.shift();
+    }
+
+    user.password = hashedPassword;
+    user.passwordChangedAt = Date.now();
+
+    await user.save();
+
+    await logAction(req, `Password changed`);
+
+    return resp.json({
+      success: true,
+      message: 'Password updated successfully'
+    });
+
+  } catch (err) {
+    console.error(err);
+    resp.status(500).json({ success: false });
+  }
+});
+  
+router.post('/forgot-password-email', async function(req, resp) {
+  try {
+    const { email, newPassword } = req.body;
+
+    const user = await userModel.findOne({ email });
+
+    if (!user) {
+      return resp.json({ success: false, message: 'Email not found' });
+    }
+
+    if (!PASSWORD_REGEX.test(newPassword)) {
+      return resp.json({
+        success: false,
+        message: 'Password must meet requirements'
+      });
+    }
+
+    const hashedPassword = await bcrypt.hash(newPassword, 10);
+
+    user.password = hashedPassword;
+    user.passwordChangedAt = Date.now();
+
+    await user.save();
+
+    await logAction(req, `Password reset via email: ${email}`);
+
+    return resp.json({
+      success: true,
+      message: 'Password reset successful'
+    });
+
+  } catch (err) {
+    console.error(err);
+    resp.status(500).json({ success: false });
   }
 });
 
-  // logout route
-  router.get('/logout', function(req, res) {
-    req.session.destroy(function(error) {
-      if (error) {
-        console.error('Error destroying session:', error);
-        res.status(500).json({ success: false, message: 'Failed to logout' });
-      } else {
-        res.redirect('/');
-      }
-    });
-  });
-
-  // route for getting forgot password page
-  router.get('/forgotpassword', function (req, res) {
-    console.log('\nCurrently at Forgot Password Page');
-    res.render('forgotpassword', {
-      layout: 'index',
-      title: 'Forgot Password',
-    });
-  });
-
-  // route for updating the database of new password when forgotten
-  router.post('/forgot-password', function(req, resp) {
-    const { username, newPassword } = req.body;
-    const saltRounds = 10; 
-
-    bcrypt.hash(newPassword, saltRounds).then(function(hashedPassword) {
-        userModel.findOne({ username }).then(function(user) {
-            if (user) {
-              user.password = hashedPassword;
-              return user.save();
-            } else {
-              console.log("\nUser not found with username: ", username);
-              return Promise.reject({ success: false, message: 'Username not found' });
-            }
-          })
-          .then(function(updatedUser) {
-            console.log("\nPassword updated successfully for user: ", updatedUser.username);
-  
-            req.session.username = updatedUser.username;
-            req.session.user_icon = updatedUser.userType === 'admin'
-              ? '/images/admin-icon.png'
-              : updatedUser.user_icon;
-            req.session.userType = updatedUser.userType;
-            console.log("\nUser ", req.session.username, " Found");
-            console.log("User Type:", req.session.userType);
-            console.log("\n");
-            resp.json({ success: true, message: 'Password updated successfully' });
-          })
-          .catch(function(error) {
-            errorFn(error);
-            resp.status(500).json({ status: 'error', message: 'Internal Server Error' });
-          });
-      })
-      .catch(function(error) {
-        errorFn(error);
-        resp.status(500).json({ status: 'error', message: 'Internal Server Error' });
-      });
-  });
-  
   // route for user view homepage
   router.get('/landingPage', requireAuth, function (req, resp) {
     console.log('\nCurrently at Landing Page');

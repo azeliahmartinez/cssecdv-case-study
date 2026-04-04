@@ -21,8 +21,14 @@ const userSchema = new mongoose.Schema({
     place_name: { type: String },
     review_title: { type: String },
   }],
-  rememberMeToken: String, // Remember me token field
-  rememberMeTokenExpires: Date
+rememberMeToken: String,
+rememberMeTokenExpires: Date,
+
+//SECURITY FIELDS
+loginAttempts: { type: Number, default: 0 },
+lockUntil: { type: Date },
+passwordHistory: { type: [String], default: [] },
+passwordChangedAt: { type: Date }
 }, { versionKey: false });
 
 // user model

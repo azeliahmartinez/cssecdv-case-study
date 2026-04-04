@@ -167,54 +167,42 @@ function submitLoginForm() {
     return false;
 }
 
-// function when submitting form for forgotten new password
-function submitForgotPasswordForm() {
-    let usernameString = document.getElementById("username-field").value;
-    let passString = document.getElementById("password-field").value;
-    const passwordRegex = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)[a-zA-Z\d]{8,}$/;
-    
-    if (usernameString.length < 1) {
-        alert("Username cannot be empty");
-        return false;
-    } else if (passString.length < 1) {
-        alert("Password cannot be empty");
+function submitChangePasswordForm() {
+    let currentPassword = document.getElementById("current-password").value;
+    let newPassword = document.getElementById("new-password").value;
+
+    const passwordRegex = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d).{8,}$/;
+
+    if (!currentPassword || !newPassword) {
+        alert("All fields are required");
         return false;
     }
 
-    if (!passwordRegex.test(passString)) {
-        alert("Password must contain at least 8 characters, including at least one uppercase letter, one lowercase letter, and one number.");
+    if (!passwordRegex.test(newPassword)) {
+        alert("Password must contain at least 8 characters, including uppercase, lowercase, and number.");
         return false;
     }
 
-    // making a POST request to the server to update password
-    fetch('/forgot-password', {
+    fetch('/change-password', {
         method: 'POST',
-        headers: {
-            'Content-Type': 'application/json'
-        },
+        headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-            username: usernameString,
-            password: passString
+            currentPassword,
+            newPassword
         })
     })
-    .then(response => {
-        if (response.redirected) {
-            window.location.href = response.url;        
-        } else {
-            return response.json();
-        }
-    })
+    .then(res => res.json())
     .then(data => {
-        if (data && data.success) {
+        if (data.success) {
             alert(data.message);
-            window.location.href = 'landingPage';
+            window.location.reload();
         } else {
-            alert(data.message); 
+            alert(data.message);
         }
     })
-    .catch(error => {
-        console.error('Error:', error);
-        alert('An error occurred while updating the password.');
+    .catch(err => {
+        console.error(err);
+        alert("Error updating password");
     });
 
     return false;
