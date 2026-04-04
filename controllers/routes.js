@@ -396,12 +396,13 @@ function addRoutes(server) {
     });
 
   // SHOW FORGOT PASSWORD PAGE
-  router.get('/forgotpassword', function (req, res) {
-    res.render('forgotpassword', {
-      layout: 'index',
-      title: 'Forgot Password'
-    });
+router.get('/forgotpassword', function (req, res) {
+  res.render('forgotpassword', {
+    layout: 'index',
+    title: 'Password',
+    isLoggedIn: !!req.session.username
   });
+});
 
   router.post('/forgot-password', async (req, res) => {
   try {
@@ -466,16 +467,39 @@ router.post('/reset-password/:token', async (req, res) => {
       return res.json({ success: false, message: 'Invalid or expired token' });
     }
 
+    // PASSWORD COMPLEXITY (same as change password)
     if (!PASSWORD_REGEX.test(password)) {
       return res.json({
         success: false,
-        message: 'Password must meet requirements'
+        message: 'Password must contain uppercase, lowercase, number, and 8+ chars'
       });
     }
 
+    // PASSWORD REUSE CHECK (same logic as change password)
+    const isReused = await Promise.all(
+      (user.passwordHistory || []).map(p => bcrypt.compare(password, p))
+    );
+
+    if (isReused.includes(true)) {
+      return res.json({
+        success: false,
+        message: 'Cannot reuse previous passwords'
+      });
+    }
+
+    // HASH PASSWORD
     const hashedPassword = await bcrypt.hash(password, 10);
 
+    // SAVE HISTORY (same as change password)
+    user.passwordHistory.push(user.password);
+    if (user.passwordHistory.length > 3) {
+      user.passwordHistory.shift();
+    }
+
     user.password = hashedPassword;
+    user.passwordChangedAt = Date.now();
+
+    // CLEAR TOKEN
     user.resetPasswordToken = null;
     user.resetPasswordExpires = null;
 
