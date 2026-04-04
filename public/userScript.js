@@ -159,8 +159,15 @@ function submitLoginForm() {
     })
     .then(data => {
         if (data && data.success) {
+
+            if (data.lastLoginInfo && data.lastLoginInfo.time) {
+                alert(
+                `Last login attempt:\n${new Date(data.lastLoginInfo.time).toLocaleString()}\nStatus: ${data.lastLoginInfo.success ? 'Success' : 'Failed'}`
+                );
+            }
+
             window.location.href = data.redirect || '/landingPage';
-        } else {
+        }   else {
             alert(data.message || 'username and password do not match');
         }
     })
@@ -484,10 +491,29 @@ function submitAdminDeleteUserForm(event, form, userId) {
 
 function submitForgotPasswordForm() {
     let email = document.getElementById("email-field").value;
+    let otp = document.getElementById("otp-field").value;
+    let password = document.getElementById("new-password").value;
+
+    fetch('/verify-reset', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email, otp, password })
+    })
+    .then(res => res.json())
+    .then(data => {
+        alert(data.message);
+        if (data.success) window.location.href = '/login';
+    });
+
+    return false;
+}
+
+function sendOTP() {
+    let email = document.getElementById("email-field").value;
 
     if (!email) {
-        alert("Email required");
-        return false;
+        alert("Enter your email first");
+        return;
     }
 
     fetch('/forgot-password', {
@@ -497,13 +523,10 @@ function submitForgotPasswordForm() {
     })
     .then(res => res.json())
     .then(data => {
-        if (data.success) {
-            window.location.href = data.redirect;
-        } else {
-             alert(data.message);
-        }
+        alert(data.message);
+    })
+    .catch(err => {
+        console.error(err);
+        alert("Error sending OTP");
     });
-
-    return false;
 }
-

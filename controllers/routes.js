@@ -320,16 +320,16 @@ router.post('/read-user', async function(req, resp) {
         message: 'Account is locked. Try again later.'
       });
     }
-
+    user.lastLoginAttemptAt = new Date();
     const passwordMatch = await bcrypt.compare(password, user.password);
 
     // WRONG PASSWORD
     if (!passwordMatch) {
       user.loginAttempts += 1;
+      user.lastLoginSuccess = false;
 
-      // LOCK AFTER 5 ATTEMPTS
       if (user.loginAttempts >= 5) {
-        user.lockUntil = Date.now() + (15 * 60 * 1000); // 15 mins
+        user.lockUntil = Date.now() + (15 * 60 * 1000);
 
         await logAction(req, `Account locked: ${user.username}`);
       }
@@ -350,6 +350,19 @@ router.post('/read-user', async function(req, resp) {
 
     await user.save();
 
+    // 🔐 STORE PREVIOUS LOGIN INFO BEFORE OVERWRITING
+    const lastLoginInfo = {
+      time: user.lastLoginAttemptAt,
+      success: user.lastLoginSuccess
+    };
+
+    // 🔐 UPDATE CURRENT LOGIN STATE
+    user.lastLoginAt = new Date();
+    user.lastLoginSuccess = true;
+    user.loginAttempts = 0;
+    user.lockUntil = null;
+
+await user.save();
     // SESSION SETUP
     req.session.username = user.username;
     req.session.name = user.name;
@@ -378,9 +391,17 @@ router.post('/read-user', async function(req, resp) {
 
     // REDIRECT
     if (user.userType === 'admin') {
-      resp.json({ success: true, redirect: '/admin/dashboard' });
+      resp.json({ 
+        success: true, 
+        redirect: '/admin/dashboard',
+        lastLoginInfo 
+      });
     } else {
-      resp.json({ success: true, redirect: '/landingPage' });
+      resp.json({ 
+        success: true, 
+        redirect: '/landingPage',
+        lastLoginInfo 
+      });
     }
 
   } catch (error) {
@@ -410,7 +431,7 @@ router.get('/forgotpassword', function (req, res) {
   });
 });
 
-  router.post('/forgot-password', async (req, res) => {
+ router.post('/forgot-password', async (req, res) => {
   try {
     const { email } = req.body;
 
@@ -420,22 +441,114 @@ router.get('/forgotpassword', function (req, res) {
       return res.json({ success: false, message: 'Email not found' });
     }
 
-    const token = Math.random().toString(36).substring(2);
+    // GENERATE OTP
+    const otp = Math.floor(100000 + Math.random() * 900000).toString();
 
-    user.resetPasswordToken = token;
-    user.resetPasswordExpires = Date.now() + (15 * 60 * 1000);
+    // ✅ STORE IN SESSION INSTEAD OF DB
+    req.session.resetOTP = otp;
+    req.session.resetEmail = email;
+    req.session.resetOTPExpires = Date.now() + (10 * 60 * 1000);
 
-    await user.save();
+    console.log(`OTP for ${email}: ${otp}`);
 
     return res.json({
       success: true,
-      redirect: `/reset-password/${token}`
-    });
+      message: 'OTP sent (check console)'
+});
 
   } catch (err) {
     console.error(err);
     res.status(500).json({ success: false });
   }
+});
+
+router.post('/verify-reset', async (req, res) => {
+  const { email, otp, password } = req.body;
+
+  const cleanOTP = String(otp).trim();
+
+  // CHECK SESSION INSTEAD OF DB
+  if (
+    req.session.resetEmail !== email ||
+    req.session.resetOTP !== cleanOTP ||
+    req.session.resetOTPExpires < Date.now()
+  ) {
+    return res.json({ success: false, message: 'Invalid or expired OTP' });
+  }
+
+  // FIND USER AFTER VALIDATION
+  const user = await userModel.findOne({ email });
+
+if (!user) {
+  return res.json({ success: false, message: 'User not found' });
+}
+  if (!user) {
+    return res.json({ success: false, message: 'Invalid or expired OTP' });
+  }
+  // EMPTY CHECK
+if (!password || password.trim().length === 0) {
+  return res.json({
+    success: false,
+    message: 'Password cannot be empty'
+  });
+}
+
+// PASSWORD COMPLEXITY (SAME AS REGISTRATION)
+if (!PASSWORD_REGEX.test(password)) {
+  return res.json({
+    success: false,
+    message: 'Password must contain uppercase, lowercase, number, and 8+ chars'
+  });
+}
+
+  // PREVENT FREQUENT CHANGE (SAME AS CHANGE PASSWORD)
+  if (user.passwordChangedAt) {
+    const oneDay = 24 * 60 * 60 * 1000;
+    const timeSinceLastChange = Date.now() - new Date(user.passwordChangedAt).getTime();
+
+    if (timeSinceLastChange < oneDay) {
+      return res.json({
+        success: false,
+        message: 'You can only change your password once every 24 hours'
+      });
+    }
+  }
+
+  // PASSWORD REUSE CHECK (SAME AS CHANGE PASSWORD)
+  const isReused = await Promise.all(
+    (user.passwordHistory || []).map(p => bcrypt.compare(password, p))
+  );
+
+  if (isReused.includes(true)) {
+    return res.json({
+      success: false,
+      message: 'Cannot reuse previous passwords'
+    });
+  }
+
+  const hashedPassword = await bcrypt.hash(password, 10);
+
+
+  if (!user.passwordHistory) user.passwordHistory = [];
+
+  user.passwordHistory.push(user.password);
+
+  if (user.passwordHistory.length > 3) {
+    user.passwordHistory.shift();
+  }
+
+  user.password = hashedPassword;
+  user.passwordChangedAt = Date.now();
+
+  await user.save();
+
+  req.session.resetOTP = null;
+  req.session.resetEmail = null;
+  req.session.resetOTPExpires = null;
+
+  await logAction(null, `Password reset with OTP: ${email}`);
+
+  res.json({ success: true, message: 'Password reset successful' });
 });
 
 router.get('/reset-password/:token', async (req, res) => {
