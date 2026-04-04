@@ -4,7 +4,7 @@ const express = require('express');
 const server = express();
 
 server.use(session({
-  secret: 'private_key',
+  secret: process.env.SESSION_SECRET,
   resave: false,
   saveUninitialized: false
 }));
