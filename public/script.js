@@ -3,6 +3,44 @@ document.addEventListener("DOMContentLoaded", function() {
     if (closeButton) {
         closeButton.addEventListener("click", hideEstablishmentWidget);
     }
+
+    const avatarForm = document.getElementById("avatarForm");
+    if (avatarForm) {
+        avatarForm.addEventListener("submit", async function (e) {
+            e.preventDefault();
+
+            const selectedAvatar = document.querySelector('input[name="user_icon"]:checked');
+
+            if (!selectedAvatar) {
+                alert("Please choose an avatar first.");
+                return;
+            }
+
+            try {
+                const response = await fetch("/choose-avatar", {
+                    method: "POST",
+                    headers: {
+                        "Content-Type": "application/json"
+                    },
+                    body: JSON.stringify({
+                        user_icon: selectedAvatar.value
+                    })
+                });
+
+                const data = await response.json();
+
+                if (data.success) {
+                    alert(data.message || "Avatar saved successfully!");
+                    window.location.href = "/landingPage";
+                } else {
+                    alert(data.message || "Failed to save avatar.");
+                }
+            } catch (error) {
+                console.error("Error saving avatar:", error);
+                alert("An error occurred while saving your avatar.");
+            }
+        });
+    }
 });
 
 

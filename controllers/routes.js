@@ -1350,7 +1350,7 @@ router.post('/delete-establishment/:establishmentId',
       display_name: req.session.name,
       username: req.session.username,
       rating,
-      review_photo: './uploads/' + review_photo,
+      review_photo: review_photo ? './uploads/' + review_photo : '',
       review_title,
       place_name,
       caption,
@@ -1714,29 +1714,34 @@ router.post('/delete-establishment/:establishmentId',
   });
 
   //router to delete a review
-  router.post('/remove-review', requireAuth, async (req, res) => {
+  router.post('/remove-review/:reviewId', requireAuth, async (req, res) => {
     try {
-        const reviewPhoto = req.body.review_photo;
+      const review = await reviewModel.findById(req.params.reviewId);
 
-        // Delete the review
-        const deletedReview = await reviewModel.findOneAndDelete({ review_photo: reviewPhoto });
+      if (!review) {
+        return res.status(404).json({ success: false, message: 'Review not found' });
+      }
 
-        if (!deletedReview) {
-            return res.status(404).json({ success: false, message: 'Review not found' });
-        }
+      if (
+        review.username !== req.session.username &&
+        req.session.userType !== 'admin'
+      ) {
+        return res.status(403).json({ success: false, message: 'Unauthorized' });
+      }
 
-        // Remove the review from the createdreview array in user data
-        await userModel.updateMany(
-            {},
-            { $pull: { createdreview: { review_photo: reviewPhoto } } }
-        );
+      await reviewModel.findByIdAndDelete(req.params.reviewId);
 
-        return res.json({ success: true, message: 'Review removed successfully' });
+      await userModel.updateMany(
+        {},
+        { $pull: { createdreview: { place_name: review.place_name, review_title: review.review_title } } }
+      );
+
+      return res.json({ success: true, message: 'Review removed successfully' });
     } catch (error) {
-        console.error('Error deleting review:', error);
-        return res.status(500).json({ success: false, message: 'An error occurred' });
+      console.error('Error deleting review:', error);
+      return res.status(500).json({ success: false, message: 'An error occurred' });
     }
-});
+  });
 
   return router;
 }

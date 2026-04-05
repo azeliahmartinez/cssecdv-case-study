@@ -34,12 +34,12 @@
 
                     <div class="info-item">
                         <label for="review-title">Review Title</label>
-                        <input type="text" id="review_title" name="review_title" value="{{review_title}}" placeholder="Update review title">
+                        <input type="text" id="review_title_{{_id}}" name="review_title" value="{{review_title}}" placeholder="Update review title">
                     </div>
 
                     <div class="info-item">
                         <label for="description">Description</label>
-                        <input type="text" id="caption" name="description" value="{{caption}}" placeholder="Update review description" onshow="autoExpand(this)">
+                        <input type="text" id="caption_{{_id}}" name="description" value="{{caption}}" placeholder="Update review description" onshow="autoExpand(this)">
                     </div>
 
                     <div class="establishment-options">
@@ -70,7 +70,7 @@
         </div>
         {{/if}}
 
-        <div class="comment-section" id="commentSection">
+        <div class="comment-section" id="commentSection-{{_id}}">
             {{#each comments}}
             <div class="comment-item">
                 <div class="user-profile-establishment">

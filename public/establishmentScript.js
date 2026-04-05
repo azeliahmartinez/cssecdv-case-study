@@ -278,49 +278,48 @@ function applyRatingFilter(rating) {
 // function to handle write a review
 function submitReview() {
   const formData = new FormData();
-  const fileInput = document.getElementById('photo-upload').files[0];
-  const review_title = document.getElementById('review-title').value;
+  const photoInput = document.getElementById('photo-upload');
+  const review_title = document.getElementById('review-title').value.trim();
   const place_name = document.getElementById('review-location').value;
-  const caption = document.getElementById('review-description').value;
-  const rating = getStarRating();
-  const reviewsCountElement = document.getElementById('reviews-count');
+  const caption = document.getElementById('review-description').value.trim();
+  const rating = getWriteReviewRating();
 
   if (rating === 0) {
-      alert('Please select a star rating.');
-      return;
+    alert('Please select a star rating.');
+    return;
   }
 
-  formData.append('review_photo', fileInput);
+  if (!review_title) {
+    alert('Please enter a review title.');
+    return;
+  }
+
+  if (photoInput && photoInput.files && photoInput.files[0]) {
+    formData.append('review_photo', photoInput.files[0]);
+  }
+
   formData.append('review_title', review_title);
   formData.append('place_name', place_name);
   formData.append('caption', caption);
   formData.append('rating', rating);
 
   fetch('/submit-review', {
-      method: 'POST',
-      body: formData
+    method: 'POST',
+    body: formData
   })
-  .then(response => {
-      if (!response.ok) {
-          throw new Error('Network response was not ok');
-      }
-      return response.json();
-  })
-  .then(data => {
-      if (data && data.success) {
-          alert(data.message);
-
-          if (reviewsCountElement) {
-              const newReviewCount = parseInt(reviewsCountElement.innerText.split(' ')[0]) + 1;
-              reviewsCountElement.innerText = newReviewCount + ' reviews';
-          }
+    .then(response => response.json())
+    .then(data => {
+      if (data.success) {
+        alert(data.message || 'Review submitted successfully!');
+        window.location.reload();
       } else {
-          alert('Failed to create review: ' + data.message);
+        alert(data.message || 'Failed to submit review.');
       }
-  })
-  .catch(error => {
+    })
+    .catch(error => {
       console.error('Error submitting review:', error);
-  });
+      alert('An error occurred while submitting your review.');
+    });
 }
 
 
@@ -337,16 +336,13 @@ function highlightStars(rating) {
 }
 
 // function to retrieve the selected star rating in writing a review
-function getStarRating() {
-  const stars = document.querySelectorAll('.review-rating .fa-star.checked');
-  return stars.length; 
+function getWriteReviewRating() {
+  const stars = document.querySelectorAll('.write-review-rating .fa-star.checked');
+  return stars.length;
 }
 
 // function to post comment asynchronously
-function submitComment(reviewId) {
-  const commentInput = document.querySelector('.comment-input');
-  const comment = commentInput.value;
-
+function submitComment(reviewId, comment) {
   const formData = { reviewId, comment };
 
   fetch('/submit-comment', {
@@ -354,58 +350,56 @@ function submitComment(reviewId) {
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify(formData),
   })
-  .then(response => response.json())
-  .then(data => {
-    if (data.success) {
-      alert('Comment posted successfully!');
-      appendCommentToUI(data.newComment);
-      commentInput.value = ''; 
-    } else {
-      alert('Failed to submit comment: ' + (data.message || 'Unknown error'));
-    }
-  })
-  .catch(error => {
-    console.error('Error submitting comment:', error);
-    alert('An error occurred while submitting the comment.');
-  });
+    .then(response => response.json())
+    .then(data => {
+      if (data.success) {
+        alert('Comment posted successfully!');
+        appendCommentToUI(reviewId, data.newComment);
+      } else {
+        alert('Failed to submit comment: ' + (data.message || 'Unknown error'));
+      }
+    })
+    .catch(error => {
+      console.error('Error submitting comment:', error);
+      alert('An error occurred while submitting the comment.');
+    });
 }
 
 
 // function to display the comment data in the comment section template
-function appendCommentToUI(comment) {
-  // commentSection (review_partial.hbs) is the container where comments are displayed.
-  const commentSection = document.getElementById('commentSection');
+function appendCommentToUI(reviewId, comment) {
+  const commentSection = document.getElementById(`commentSection-${reviewId}`);
+  if (!commentSection) return;
 
+  const commentItem = document.createElement('div');
+  commentItem.classList.add('comment-item');
 
-  const commentDiv = document.createElement('div');
-  commentDiv.classList.add('user-profile-establishment');
-
+  const profile = document.createElement('div');
+  profile.classList.add('user-profile-establishment');
 
   const img = document.createElement('img');
-  img.src = comment.user_icon;
-  img.alt = 'User Icon';
-  commentDiv.appendChild(img);
-
+  img.src = comment.user_icon || '/images/admin-icon.png';
+  img.alt = comment.username;
 
   const profileTextDiv = document.createElement('div');
   profileTextDiv.classList.add('profile-text');
 
-
   const usernameSpan = document.createElement('span');
   usernameSpan.classList.add('username');
   usernameSpan.textContent = comment.username;
-  profileTextDiv.appendChild(usernameSpan);
-
 
   const commentSpan = document.createElement('span');
   commentSpan.classList.add('comment-box');
   commentSpan.textContent = comment.comment;
+
+  profileTextDiv.appendChild(usernameSpan);
   profileTextDiv.appendChild(commentSpan);
 
+  profile.appendChild(img);
+  profile.appendChild(profileTextDiv);
 
-  commentDiv.appendChild(profileTextDiv);
-
-  commentSection.appendChild(commentDiv);
+  commentItem.appendChild(profile);
+  commentSection.appendChild(commentItem);
 }
 
 
@@ -423,8 +417,8 @@ function hideEditReviewWidget(reviewId) {
 
 // function to edit review
 function editReview(reviewId) {
-  const review_title = document.getElementById('review_title').value;
-  const caption = document.getElementById('caption').value;
+  const review_title = document.getElementById(`review_title_${reviewId}`).value.trim();
+  const caption = document.getElementById(`caption_${reviewId}`).value.trim();
 
   fetch(`/edit-review/${reviewId}`, {
     method: 'POST',
@@ -432,27 +426,26 @@ function editReview(reviewId) {
       'Content-Type': 'application/json'
     },
     body: JSON.stringify({
-      review_title: review_title,
-      caption: caption
+      review_title,
+      caption
+    })
   })
-  })
-  .then(response => {
-    if (!response.ok) {
-      throw new Error('Network response was not ok');
-    }
-    return response.json();
-  })
-  .then(data => {
-    if (data && data.success) {
-      alert(data.message);
-      hideEditReviewWidget(reviewId);
-    } else {
-      alert('Failed to edit review: ' + data.message);
-    }
-  })
-  .catch(error => {
-    console.error('Error editing review:', error);
-  });
+    .then(response => response.json())
+    .then(data => {
+      if (data.success) {
+        alert(data.message || 'Review updated successfully!');
+        hideEditReviewWidget(reviewId);
+        window.location.reload();
+      } else {
+        alert(data.message || 'Failed to edit review.');
+      }
+    })
+    .catch(error => {
+      console.error('Error editing review:', error);
+      alert('An error occurred while editing the review.');
+    });
+
+  return false;
 }
 
 // Function to update establishment details via AJAX
@@ -525,4 +518,25 @@ function deleteEstablishment(id) {
   .catch(error => {
     console.error("Delete error:", error);
   });
+}
+
+function removeReview(reviewId) {
+  if (!confirm('Are you sure you want to delete this review?')) return;
+
+  fetch(`/remove-review/${reviewId}`, {
+    method: 'POST'
+  })
+    .then(response => response.json())
+    .then(data => {
+      if (data.success) {
+        alert(data.message || 'Review deleted successfully!');
+        window.location.reload();
+      } else {
+        alert(data.message || 'Failed to delete review.');
+      }
+    })
+    .catch(error => {
+      console.error('Error deleting review:', error);
+      alert('An error occurred while deleting the review.');
+    });
 }

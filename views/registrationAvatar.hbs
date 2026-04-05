@@ -1,35 +1,36 @@
-<body class="registration-body">
+<div class="register-page">
+  <div class="register-shell">
+    <div class="register-card">
 
-<div class="parent-content-reg">
-        
-        <div class="left-reg">
-            <div class="img">
-                <img class="logo" src="/images/logo2.png" alt="CoFeed Logo"/>
-            </div>
-            
-            <div class="details">
-                <p class="greeting"><b>Welcome,</b></p>
-                <p class="greeting"><b>Brew Buddy!</b></p>
-                <p class="tagline">Ready to Sip, Share, and</p>
-                <p class="tagline">Discover the Perfect Pour?</p>
-            </div>
-        
-        </div>
-        
-        <div class="vertical-line-reg"> </div>
-        
-        <div class="right-reg" id="avatar-container">
-            <p class="main"><b>Choose Your Avatar</b></p>
-            <form class="avatarForm" name="avatarForm" action="choose-avatar" method="post" onsubmit="return submitAvatarForm('{{username}}')">
+      <div class="register-left">
+        <img class="register-logo" src="/images/logo2.png" alt="CoFeed Logo">
+
+        <p class="register-eyebrow">Create Account</p>
+        <h1 class="register-greeting">Welcome,<br>Brew Buddy!</h1>
+        <p class="register-tagline">Ready to Sip, Share, and</p>
+        <p class="register-tagline">Discover the Perfect Pour?</p>
+      </div>
+
+      <div class="register-divider"></div>
+
+      <div class="register-right" id="avatar-container">
+        <h2 class="register-main">Choose Your Avatar</h2>
+        <p class="register-subtext">Pick the avatar you want to use for your account.</p>
+
+        <form class="avatar-form-modern" id="avatarForm">
+          <div class="avatar-grid">
             {{#each user_icon}}
-                <div class="avatar">
-                    <input type="radio" name="avatar" value="{{user_icon}}">
-                    <img src="{{user_icon}}" alt="Avatar">
-                </div>
+              <label class="avatar-option">
+                <input type="radio" name="user_icon" value="{{user_icon}}" required>
+                <img src="{{user_icon}}" alt="Avatar">
+              </label>
             {{/each}}
-                <button type="submit" class="choose-avatar-button">Choose Avatar</button>
-            </form>
-        </div>
-    </div>
+          </div>
 
-</body>
+          <button type="submit" class="register-button">Choose Avatar</button>
+        </form>
+      </div>
+
+    </div>
+  </div>
+</div>
