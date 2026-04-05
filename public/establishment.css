@@ -1,14 +1,11 @@
 
 .edit-widget-container {
-    position: absolute;
-    z-index: 1000; 
-    justify-content: center; 
-    align-items: center; 
-    height: fit-content;
-    overflow-y: auto;
-    top: 2%; 
-    left: 50%;
-    transform: translateX(-50%);
+    z-index: 2000;
+}
+
+#edit-widget.edit-widget-container {
+    width: min(760px, 92vw);
+    max-height: 88vh;
 }
 
 /* style for main banner area */
@@ -128,7 +125,7 @@
     border: 1px solid rgba(82, 61, 53, 0.08);
     border-radius: 28px;
     box-shadow: 0 14px 34px rgba(47, 59, 59, 0.06);
-    overflow: hidden;
+    overflow: visible;
     position: sticky;
     top: 94px;
 }
@@ -1595,4 +1592,43 @@ hr.h1 {
 
 .review-container.review-container-no-photo .review-header-row {
     padding-right: 88px;
+}
+
+#edit-widget.edit-widget-container {
+    position: fixed !important;
+    top: 50% !important;
+    left: 50% !important;
+    transform: translate(-50%, -50%) !important;
+    width: min(760px, 92vw) !important;
+    max-height: 88vh;
+    overflow-y: auto;
+    background: #fffaf5;
+    border: 1px solid rgba(82, 61, 53, 0.08);
+    border-radius: 28px;
+    box-shadow: 0 24px 60px rgba(47, 59, 59, 0.16);
+    padding: 28px 28px 24px;
+    z-index: 3000 !important;
+}
+.edit-establishmentwidget {
+    width: 100%;
+    box-sizing: border-box;
+}
+
+.edit-establishmentwidget .main {
+    margin: 0 0 18px;
+    color: #2f3b3b;
+    font-size: 2rem;
+    line-height: 1.05;
+    font-weight: 800;
+    letter-spacing: -0.03em;
+    font-family: Inter, ui-sans-serif, system-ui, sans-serif;
+}
+
+.edit-establishmentwidget .info-item {
+    margin-bottom: 18px;
+}
+
+.edit-establishmentwidget .info-item input[type="text"] {
+    width: 100%;
+    box-sizing: border-box;
 }
