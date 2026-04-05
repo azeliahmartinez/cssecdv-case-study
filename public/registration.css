@@ -371,6 +371,33 @@
     margin-bottom: 18px;
 }
 
+.forgot-password-right .forgot-password-button {
+    display: block;
+    width: 100%;
+    margin-top: 6px;
+    margin-bottom: 18px;
+}
+
+#otp-block,
+#recovery-block {
+    margin-top: 6px;
+}
+
+#otp-block label,
+#recovery-block label,
+.forgot-form-group label {
+    display: block;
+    margin-bottom: 8px;
+}
+
+.forgot-password-right .forgot-subtext {
+    margin-bottom: 24px;
+}
+
+.forgot-password-input-wrap {
+    margin-bottom: 0;
+}
+
 .forgot-password-button {
     margin-top: 8px;
     width: 100%;
