@@ -15,104 +15,143 @@
     {{/if}}
 </div>
 
-<!-- container for the content -->
-<div class="parent-contentVE">
-    
-        <div class="left-VE">
-            <form action="/viewEstablishments" method="POST" id="filterForm">    
-            <div class="filter-section">
-                
-                <h2>Filters</h2>
-                
-                <div class="filter-options">
-                    <h3>Price</h3>
-                    <ul>
-                        <li><input type="checkbox" name="price_range" value="₱70 - ₱150" id="price-1"> <label for="price-1">₱70 - ₱150</label></li>
-                        <li><input type="checkbox" name="price_range" value="₱100 - ₱200" id="price-2"> <label for="price-2">₱100 - ₱200</label></li>
-                        <li><input type="checkbox" name="price_range" value="₱120 - ₱220" id="price-3"> <label for="price-3">₱120 - ₱220</label></li>
-                        <li><input type="checkbox" name="price_range" value="₱150 - ₱300" id="price-4"> <label for="price-4">₱150 - ₱300</label></li>
-                        <li><input type="checkbox" name="price_range" value="₱200 - ₱400" id="price-5"> <label for="price-5">₱200 - ₱400</label></li>
-                    </ul>
-                </div>
-                
-                <div class="filter-options">
-                    <h3>Features</h3>
-                    <ul>
-                        <li><input type="checkbox" name="services_offered" value="Parking" id="feature-parking"> <label for="feature-parking">Parking</label></li>
-                        <li><input type="checkbox" name="services_offered" value="Outdoor Seating" id="feature-outdoor-seating"> <label for="feature-outdoor-seating">Outdoor Seating</label></li>
-                    </ul>
-                </div>
-                
-                <div class="filter-options">
-                    <h3>Area</h3>
-                    <ul>
-                        <li><input type="radio" name="area" id="metro" value="metro"><label for="metro">Metro Manila</label></li>
-                        <li><input type="radio" name="area" id="nonmetro" value="nonmetro"><label for="nonmetro">Outside Metro Manila</label></li>
-                    </ul>
-                </div>
-                
-                <div class="filter-options">
-                    <h3>Location</h3>
-                    <input type="text" name="location" id="location" placeholder="Enter location">
-                </div>
-                
-                <div class="apply-filter">
-                    <button type="submit" id="applyfilter">Apply Filters</button>
-                </div>
-            
-            </div>
-            </form> 
-            <div class="map">
-                <iframe id="google-map" src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d247138.7924066113!2d120.85583263141238!3d14.568070712112362!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x3397c8d26026386d%3A0x5fed23daac9278d0!2sMetro%20Manila!5e0!3m2!1sen!2sph!4v1711597019860!5m2!1sen!2sph"></iframe>
-            </div>
-        </div>
-    
+<div class="ve-page">
+    <div class="ve-shell">
 
-    <div class="right-VE">
-        <div class="headline">
-            {{#if headlineLocation}}
-            <div class="headline-location">{{headlineLocation}}</div>
-            {{else}}
-            <div class="headline-location">Search Results for "{{key}}"</div>
-            {{/if}}
-            <div class="sort-by">
-                <label for="sort">Sort By</label>
-                <select id="sort">
-                    <option value="latest">Location Name</option>
-                    <option value="rating-high">Rating (High to Low)</option>
-                    <option value="rating-low">Rating (Low to High)</option>
-                </select>
+        <aside class="ve-sidebar">
+            <form action="/viewEstablishments" method="POST" id="filterForm" class="ve-filter-card">
+                <div class="ve-filter-header">
+                    <p class="ve-eyebrow">Refine results</p>
+                    <h2>Filters</h2>
+                </div>
+
+                <div class="ve-filter-group">
+                    <h3>Price</h3>
+                    <label class="ve-check">
+                        <input type="checkbox" name="price_range" value="₱70 - ₱150">
+                        <span>₱70 - ₱150</span>
+                    </label>
+                    <label class="ve-check">
+                        <input type="checkbox" name="price_range" value="₱100 - ₱200">
+                        <span>₱100 - ₱200</span>
+                    </label>
+                    <label class="ve-check">
+                        <input type="checkbox" name="price_range" value="₱120 - ₱220">
+                        <span>₱120 - ₱220</span>
+                    </label>
+                    <label class="ve-check">
+                        <input type="checkbox" name="price_range" value="₱150 - ₱300">
+                        <span>₱150 - ₱300</span>
+                    </label>
+                    <label class="ve-check">
+                        <input type="checkbox" name="price_range" value="₱200 - ₱400">
+                        <span>₱200 - ₱400</span>
+                    </label>
+                </div>
+
+                <div class="ve-filter-group">
+                    <h3>Features</h3>
+                    <label class="ve-check">
+                        <input type="checkbox" name="services_offered" value="Parking">
+                        <span>Parking</span>
+                    </label>
+                    <label class="ve-check">
+                        <input type="checkbox" name="services_offered" value="Outdoor Seating">
+                        <span>Outdoor Seating</span>
+                    </label>
+                </div>
+
+                <div class="ve-filter-group">
+                    <h3>Area</h3>
+                    <label class="ve-check">
+                        <input type="radio" name="area" value="metro">
+                        <span>Metro Manila</span>
+                    </label>
+                    <label class="ve-check">
+                        <input type="radio" name="area" value="nonmetro">
+                        <span>Outside Metro Manila</span>
+                    </label>
+                </div>
+
+                <div class="ve-filter-group">
+                    <h3>Location</h3>
+                    <input type="text" name="location" id="location" class="ve-input" placeholder="Enter location">
+                </div>
+
+                <button type="submit" id="applyfilter" class="ve-filter-button">Apply Filters</button>
+            </form>
+
+            <div class="ve-map-card">
+                <iframe
+                    id="google-map"
+                    src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d247138.7924066113!2d120.85583263141238!3d14.568070712112362!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x3397c8d26026386d%3A0x5fed23daac9278d0!2sMetro%20Manila!5e0!3m2!1sen!2sph!4v1711597019860!5m2!1sen!2sph"
+                    loading="lazy"
+                    referrerpolicy="no-referrer-when-downgrade">
+                </iframe>
             </div>
-        </div>
-        <div class="places">
-            {{#each establishment}}
-            <div class="establishment">
-                <img class="place-img" src={{banner_image}} alt="establishment"/>
-                <div class="info">
-                    <div class="cafe-container">
-                        <p class="cafe">{{establishment_name}}</p>
-                        <div class="ratings-container">
-                            <p class="ratings">{{establishment_ratings}}</p>
-                            <i class="fa fa-star star-icon"></i>
-                        </div>                                 
+        </aside>
+
+        <main class="ve-main">
+            <div class="ve-topbar">
+                <div>
+                    <p class="ve-eyebrow">Browse</p>
+                    {{#if headlineLocation}}
+                        <h1 class="ve-title">{{headlineLocation}}</h1>
+                    {{else}}
+                        <h1 class="ve-title">Search Results for "{{key}}"</h1>
+                    {{/if}}
+                </div>
+
+                <div class="ve-sort">
+                    <label for="sort">Sort By</label>
+                    <select id="sort">
+                        <option value="latest">Location Name</option>
+                        <option value="rating-high">Rating (High to Low)</option>
+                        <option value="rating-low">Rating (Low to High)</option>
+                    </select>
+                </div>
+            </div>
+
+            <div class="ve-grid">
+                {{#each establishment}}
+                <article class="ve-card">
+                    <img
+                        class="ve-card-image"
+                        src="{{banner_image}}"
+                        alt="{{establishment_name}}"
+                        onerror="this.onerror=null;this.src='/images/establishment-fallback.png';"
+                    >
+
+                    <div class="ve-card-body">
+                        <div class="ve-card-head">
+                            <h3>{{establishment_name}}</h3>
+                            <div class="ve-rating-pill">
+                                <span>{{establishment_ratings}}</span>
+                                <i class="fa fa-star"></i>
+                            </div>
+                        </div>
+
+                        <p class="ve-card-location">
+                            <i class="fa fa-map-marker"></i>
+                            {{establishment_address}}
+                        </p>
+
+                        <p class="ve-card-description">
+                            {{establishment_description}}
+                        </p>
+
+                        <button class="ve-card-button" onclick="redirectToEstablishment('{{establishment_name}}')">
+                            See More
+                        </button>
                     </div>
-                <div class="details">
-                    <p class="location"><i class="fa fa-map-marker"></i>{{establishment_address}}</p>
-                </div>
-                <div class="description">
-                    <p class="desc"><i class="fa fa-info-circle"></i>{{establishment_description}}</p>
-                </div>
-                <div class="button-container2">
-                    <button id="see_more" onclick="redirectToEstablishment('{{establishment_name}}')">See More</button>
-                </div>
-                </div>       
+                </article>
+                {{/each}}
             </div>
-            {{/each}}
-        </div>
+        </main>
     </div>
 </div>
 
 <!-- container for the footer -->
 <div class="parent-footer">
-{{> footer}}
+    {{> footer}}
 </div>
