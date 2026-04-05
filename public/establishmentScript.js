@@ -108,17 +108,52 @@ document.addEventListener("DOMContentLoaded", function() {
   
   });
 
-  function createEstablishment() {
-    const form = document.getElementById('create-establishment-form');
-    const formData = new FormData(form);
+function createEstablishment() {
+  const form = document.getElementById('create-establishment-form');
+  const formData = new FormData(form);
 
-    fetch('/create-establishment', {
-      method: 'POST',
-      body: new URLSearchParams(formData)
-    })
+  const establishmentName = formData.get('establishment_name')?.trim();
+  const establishmentAddress = formData.get('establishment_address')?.trim();
+  const establishmentDescription = formData.get('establishment_description')?.trim();
+  const priceRange = formData.get('price_range')?.trim();
+  const bannerImage = formData.get('banner_image')?.trim();
+  const establishmentImagesRaw = formData.get('establishment_images')?.trim() || '';
+  const establishmentMap = formData.get('establishment_map')?.trim();
+
+  if (!establishmentName || !establishmentAddress || !establishmentDescription || !priceRange) {
+    alert('Please fill in all required fields.');
+    return false;
+  }
+
+  if (bannerImage && !/^https?:\/\//i.test(bannerImage)) {
+    alert('Banner image must be a valid URL starting with http:// or https://');
+    return false;
+  }
+
+  const imageUrls = establishmentImagesRaw
+    .split(',')
+    .map(url => url.trim())
+    .filter(Boolean);
+
+  const invalidImageUrl = imageUrls.find(url => !/^https?:\/\//i.test(url));
+  if (invalidImageUrl) {
+    alert('Each additional image must be a valid URL starting with http:// or https://');
+    return false;
+  }
+
+  if (establishmentMap && !/^https?:\/\//i.test(establishmentMap)) {
+    alert('Map URL must start with http:// or https://');
+    return false;
+  }
+
+  fetch('/create-establishment', {
+    method: 'POST',
+    body: new URLSearchParams(formData)
+  })
     .then(response => response.json())
     .then(data => {
       if (data.success) {
+        alert('Establishment created successfully!');
         window.location.href = '/owner/establishments';
       } else {
         alert(data.message || 'Failed to create establishment');
@@ -129,8 +164,8 @@ document.addEventListener("DOMContentLoaded", function() {
       alert('An error occurred while creating the establishment.');
     });
 
-    return false;
-  }
+  return false;
+}
   
 
 // function to add establishment to current user's favorites

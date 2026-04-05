@@ -354,10 +354,13 @@
                         <a class="location-map-header"><b>Locate on the Map</b></a>
                         
                         <p class="address">{{establishment.establishment_address}}</p>
-
+                        {{#if establishment.establishment_map}}
                         <div class="map">
-                            <iframe id="establishment-map" src={{establishment.establishment_map}}></iframe>
+                            <iframe id="establishment-map" src="{{establishment.establishment_map}}"></iframe>
                         </div>
+                        {{else}}
+                        <div class="empty-photo-state">No map available</div>
+                        {{/if}}
                     </div>
 
                     <!-- owner information -->
