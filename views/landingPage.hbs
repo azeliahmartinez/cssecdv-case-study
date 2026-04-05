@@ -15,95 +15,110 @@
     {{/if}}
 </div>
 
+<div class="landing-modern-page">
 
-
-<div class="greeting-container">
-    <div class="greeting">
-        <p class="serif brown">Welcome back, {{currentUser}}. Here's what your brew buddies have been up to..</p>
-    </div>
-</div>
-
-<div class="view-more">
-    <a class="sans-serif green bold">NEW FROM FRIENDS</a>
-</div>
-
-<hr>
-{{#if noRecentReviewsFromFriends}}
-<div class="brewing">No recent reviews from brew buddies. They are still brewing up something to say.</div>
-{{else}}
-<div class="friend-reviews-container">
-{{#each review-data}}    
-    <div  class="review overflow margin-right">
-                
-        <!--TOP PART / GREEN-->
-        
-        <div class="user-profile">
-            <div onclick="redirectToProfile('{{username}}')" class="profile-image-username-container">
-                {{> redirectProfile}}
-            </div>
-            <div class="review-ratings-container">
-                <p class="review-ratings">{{rating}}</p><i class="fa fa-star star-icon" id="reviewstar"></i>
+    <section class="landing-modern-hero">
+        <div class="landing-modern-hero-overlay"></div>
+        <div class="landing-modern-hero-content">
+            <div class="landing-modern-hero-card">
+                <p class="landing-modern-eyebrow">Welcome back</p>
+                <h1 class="landing-modern-title">Hey, {{currentUserName}}.</h1>
+                <p class="landing-modern-subtext">
+                    See what your brew buddies have been sharing and explore highly rated cafés around you.
+                </p>
             </div>
         </div>
-        
-        <!--BOTTOM PART-->
-        <div class="review-image-caption-container">
-            
-            <div class="review-photo-box">
-                <img class="review-photo" src="{{review_photo}}" alt="Review Picture">
+    </section>
+
+    <section class="landing-modern-section">
+        <div class="landing-modern-section-head">
+            <div>
+                <p class="landing-modern-section-eyebrow">New from friends</p>
+                <h2 class="landing-modern-section-title">Recent friend activity</h2>
             </div>
+        </div>
 
-            <div class="review-text">
-            <a onclick="redirectToEstablishment('{{place_name}}')" class="place-name brown">{{place_name}}</a>
-            <p class="caption">{{caption}}</p>
-            <p class="date-posted">{{date}}</p>
-            
+        {{#if noRecentReviewsFromFriends}}
+            <div class="landing-modern-empty">
+                No recent reviews from brew buddies. They are still brewing up something to say.
             </div>
+        {{else}}
+            <div class="landing-modern-review-grid">
+                {{#each review-data}}
+                <article class="landing-modern-review-card">
+                    <div class="landing-modern-review-top">
+                        <div onclick="redirectToProfile('{{username}}')" class="landing-modern-review-user">
+                            {{> redirectProfile}}
+                        </div>
 
-            
+                        <div class="landing-modern-review-rating">
+                            <span>{{rating}}</span>
+                            <i class="fa fa-star"></i>
+                        </div>
+                    </div>
+
+                    <div class="landing-modern-review-body">
+                        <p class="landing-modern-review-label">Reviewing</p>
+                        <a onclick="redirectToEstablishment('{{place_name}}')" class="landing-modern-review-place">
+                            {{place_name}}
+                        </a>
+
+                        {{#if review_title}}
+                        <h3 class="landing-modern-review-title">{{review_title}}</h3>
+                        {{/if}}
+
+                        <p class="landing-modern-review-caption">{{caption}}</p>
+                    </div>
+                </article>
+                {{/each}}
+            </div>
+        {{/if}}
+    </section>
+
+    <section class="landing-modern-section">
+        <div class="landing-modern-section-head">
+            <div>
+                <p class="landing-modern-section-eyebrow">Popular on Cofeed</p>
+                <h2 class="landing-modern-section-title">Highly rated cafés</h2>
+            </div>
+            <a class="landing-modern-link" href="/viewEstablishments">See all establishments</a>
         </div>
-    </div>
 
-{{/each}}
-</div> 
-{{/if}}
+        <div class="landing-modern-establishment-grid">
+            {{#each establishment-data}}
+            <article class="landing-modern-establishment-card">
+                <img
+                    class="landing-modern-establishment-image"
+                    src="{{banner_image}}"
+                    alt="{{establishment_name}}"
+                    onerror="this.onerror=null;this.src='/images/establishment-fallback.png';"
+                >
 
-<div class="view-more">
-    <a class="sans-serif green bold">POPULAR ON CO.FEED</a>
-    <p>
-    <a class="sans-serif green bold" href="/viewEstablishments">See all establishments</a>
-    <i class="fa fa-angle-right"></i>
-    </p>
-</div>
+                <div class="landing-modern-establishment-body">
+                    <div class="landing-modern-establishment-top">
+                        <h3>{{establishment_name}}</h3>
+                        <div class="landing-modern-establishment-rating">
+                            <span>{{establishment_ratings}}</span>
+                            <i class="fa fa-star"></i>
+                        </div>
+                    </div>
 
-<hr>
+                    <p class="landing-modern-establishment-location">
+                        <i class="fa fa-map-marker"></i> {{establishment_address}}
+                    </p>
 
-<div class="trending-spots-container">
-    <div class="trending-spots-list">
-        {{#each establishment-data}}
-        <div class="establishment">
-            <img class="place-img" src={{banner_image}} alt="establishment"/>
-            <div class="info">
-                <div class="cafe-container">
-                    <p class="cafe">{{establishment_name}}</p>
-                    <div class="ratings-container">
-                        <p class="ratings">{{establishment_ratings}}</p>
-                        <i class="fa fa-star star-icon"></i>
-                    </div>                                 
+                    <p class="landing-modern-establishment-description">
+                        {{establishment_description}}
+                    </p>
+
+                    <button class="landing-modern-establishment-button" onclick="redirectToEstablishment('{{establishment_name}}')">
+                        See More
+                    </button>
                 </div>
-                <div class="details">
-                    <p class="location"><i class="fa fa-map-marker"></i>{{establishment_address}}</p>
-                </div>
-                <div class="description">
-                    <p class="desc"><i class="fa fa-info-circle"></i>{{establishment_description}}</p>
-                </div>
-                <div class="button-container2">
-                    <button id="see_more" onclick="redirectToEstablishment('{{establishment_name}}')">See More</button>
-                </div>
-            </div>       
+            </article>
+            {{/each}}
         </div>
-        {{/each}}
-    </div>
+    </section>
 </div>
 
 <!-- container for the footer -->

@@ -1,90 +1,104 @@
 <!-- container for the header -->
 <div class="parent-header">
-{{> headerNonUser}}
+    {{> headerNonUser}}
 </div>
 
 <!-- container for the content -->
-<div class="parent-content">
-    <!--BANNER/HERO IMAGE-->
-    <div class="banner-block">
+<div class="parent-content home-page-modern">
 
-        <!--SPIEL BOX-->
-        <div class="banner-text-box">
-            <p class="banner-text headline">The go-to for students seeking the ideal blend of productivity and relaxation.</p>
-            <p class="banner-text body">Discover hidden gems and share your experiences at different working spaces and coffee shops. Cofeed is your go-to platform to find the coziest corners, the quietest nooks, and the most inspiring atmospheres where you can sip on your favorite brew, leave insightful reviews, and evelate your study sessions.</p>
-            <a class="join-button" href="/registration">Join Now!</a>
-        </div>
-    </div>
-
-    <!--COFEED LETS YOU.. -->
-    <div class="functionalities-block">
-        <div class="serif">Cofeed lets you..</div>
-        <div class="functionalities-list">
-            <div class="functionalities">
-                <i class="fa fa-eye"></i>
-                <p>Discover new study spaces and coffee shops</p>
-            </div>
-
-            <div class="functionalities">
-                <i class="fa fa-star"></i>
-                <p>Review and rate places you've been to</p>
-            </div>
-
-            <div class="functionalities">
-                <i class="fa fa-commenting"></i>
-                <p>Share your reviews, follow friends and other members to read theirs</p>
+    <!-- HERO -->
+    <section class="home-hero">
+        <div class="home-hero-overlay"></div>
+        <div class="home-hero-content">
+            <div class="home-hero-card">
+                <p class="home-hero-eyebrow">Find your next favorite study spot</p>
+                <h1 class="home-hero-title">
+                    The go-to for students seeking the ideal blend of productivity and relaxation.
+                </h1>
+                <p class="home-hero-body">
+                    Discover hidden gems and share your experiences at different working spaces and coffee shops.
+                    Cofeed helps you find cozy corners, quiet nooks, and inspiring cafés where you can sip your
+                    favorite brew, leave thoughtful reviews, and elevate your study sessions.
+                </p>
+                <a class="home-hero-button" href="/registration">Join Now!</a>
             </div>
         </div>
-        <div class="serif"><hr></div>
-    </div>
+    </section>
 
-    <!--RECENT REVIEWS -->
-    <div class="recent-activity-block">
-        <div class="recent-activity-block-text serif">Recent Reviews</div>
+    <!-- VALUE PROPS -->
+    <section class="home-features">
+        <div class="home-section-header">
+            <p class="home-section-eyebrow">What you can do</p>
+            <h2 class="home-section-title">Cofeed lets you...</h2>
+        </div>
+
+        <div class="home-feature-grid">
+            <article class="home-feature-card">
+                <div class="home-feature-icon"><i class="fa fa-eye"></i></div>
+                <h3>Discover new places</h3>
+                <p>Explore coffee shops and study spaces that match your mood, location, and routine.</p>
+            </article>
+
+            <article class="home-feature-card">
+                <div class="home-feature-icon"><i class="fa fa-star"></i></div>
+                <h3>Review and rate cafés</h3>
+                <p>Share honest feedback about spots you’ve visited and help others find the right vibe.</p>
+            </article>
+
+            <article class="home-feature-card">
+                <div class="home-feature-icon"><i class="fa fa-commenting"></i></div>
+                <h3>Read recent community reviews</h3>
+                <p>See what other users are saying and discover trending cafes worth checking out.</p>
+            </article>
+        </div>
+    </section>
+
+    <!-- RECENT REVIEWS -->
+    <section class="home-reviews">
+        <div class="home-section-header">
+            <p class="home-section-eyebrow">Fresh from the community</p>
+            <h2 class="home-section-title">Recent Reviews</h2>
+        </div>
+
         {{#if noRecentReviews}}
-        <div class="brewing">No recent reviews. Our brew buddies are still brewing up something to say.</div>
-        {{else}}
-        <!--RECENT REVIEWS CONTAINER -->
-        <div class="recent-reviews-container">
-        {{#each review-data}}    
-            <div  class="review overflow margin-right">
-                        
-                <!--TOP PART / GREEN-->
-                
-                <div class="user-profile">
-                    <div onclick="redirectToProfile('{{username}}')" class="profile-image-username-container">
-                        {{> redirectProfile}}
-                    </div>
-                    <div class="review-ratings-container">
-                        <p class="review-ratings">{{rating}}</p><i class="fa fa-star star-icon" id="reviewstar"></i>
-                    </div>
-                </div>
-                
-                <!--BOTTOM PART-->
-                <div class="review-image-caption-container">
-                    
-                    <div class="review-photo-box">
-                        <img class="review-photo" src="{{review_photo}}" alt="Review Picture">
-                    </div>
-
-                    <div class="review-text">
-                    <a onclick="redirectToEstablishment('{{place_name}}')" class="place-name brown">{{place_name}}</a>
-                    <p class="caption">{{caption}}</p>
-                    <p class="date-posted">{{date}}</p>
-                    
-                    </div>
-
-                    
-                </div>
+            <div class="home-empty-state">
+                No recent reviews. Our brew buddies are still brewing up something to say.
             </div>
+        {{else}}
+            <div class="home-review-grid">
+                {{#each review-data}}
+                <article class="home-review-card">
+                    <div class="home-review-top">
+                        <div onclick="redirectToProfile('{{username}}')" class="home-review-user">
+                            {{> redirectProfile}}
+                        </div>
 
-        {{/each}}
-        </div>
+                        <div class="home-review-rating">
+                            <span>{{rating}}</span>
+                            <i class="fa fa-star"></i>
+                        </div>
+                    </div>
+
+                    <div class="home-review-body">
+                        <p class="home-review-label">Reviewing</p>
+                        <a onclick="redirectToEstablishment('{{place_name}}')" class="home-review-place">
+                            {{place_name}}
+                        </a>
+
+                        {{#if review_title}}
+                        <h3 class="home-review-title">{{review_title}}</h3>
+                        {{/if}}
+
+                        <p class="home-review-caption">{{caption}}</p>
+                    </div>
+                </article>
+                {{/each}}
+            </div>
         {{/if}}
-    </div>
+    </section>
 </div>
 
 <!-- container for the footer -->
 <div class="parent-footer">
-{{> footer}}
+    {{> footer}}
 </div>

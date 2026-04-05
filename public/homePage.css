@@ -1,273 +1,364 @@
-.serif {
-    font-family: 'Cardo', serif;
-    font-weight: 700;
-}
-
-.underline{
-    text-decoration: underline;
-}
-
-.white {
-    color: white;
-}
-
-.green {
-    color:#223030;
-}
-
-.brown {
-    color:#523D35;
-}
-
-.sans-serif {
-    font-family: 'Biryani', sans-serif;
-}
-
-.bold{
-    font-weight: bold;
-}
-
-.italic{
-    font-style: italic;
-}
-
 body {
-    background-color: #F5F5F5;
+    background: #f6f2ec;
+    color: #2f3b3b;
 }
 
-.banner-block{
-    display: flex;
-    background-image: url(https://miro.medium.com/v2/resize:fit:1400/0*6lX9i2AVnurxCQgx);
-    height:400px;
-    background-position: center;
-    background-repeat: no-repeat;
-    background-size: cover;
+.home-page-modern {
+    background: #f6f2ec;
+}
+
+/* hero */
+.home-hero {
     position: relative;
+    min-height: 400px;
+    width: 100%;
+    background-image: url(https://miro.medium.com/v2/resize:fit:1400/0*6lX9i2AVnurxCQgx);
+    background-position: center;
+    background-size: cover;
+    background-repeat: no-repeat;
+    overflow: hidden;
 }
 
-.banner-text-box{
-    background-color:rgba(255,255,255, 0.6);
-    text-align: center;
-    width:42%;
-    height:56%;
-    margin-top: 5%;
-    margin-left: 1%;
-}    
-
-.headline{
-    padding-left: 5%;
-    font-family: 'Cardo', serif;
-    font-size: 29px;
-    font-weight: 700;
-    text-align: left;
+.home-hero-overlay {
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(90deg, rgba(20, 34, 35, 0.18) 0%, rgba(20, 34, 35, 0.06) 42%, rgba(20, 34, 35, 0.01) 100%);
 }
 
-.body{
-    margin-top: -20px;
-    padding-left: 5%;
-    padding-right: 9%;
-    font-size: 12px;
-    font-weight: 700;
-    font-family: 'Biryani', 'sans-serif';
-    color: #523D35;
-    text-align: left;
-}
-
-.join-button{
-    font-family: 'Biryani', 'sans-serif';
-    font-size:13px;
-    font-weight: 900;
-    color:white;
-    background-color:#523D35;
-    padding:3px 20px 1px;
-    border-radius:10px;
-    text-align: right;
-}
-
-.functionalities-block{
-    height: 20%;
-    padding-top: 30px;
-    text-align: center;
-    font-family: 'Biryani', 'sans-serif';
-    color:#523D35;
-    font-weight: 900;
-    font-size: 30px;
-    margin-bottom: 10px;
+.home-hero-content {
+    position: relative;
+    z-index: 1;
+    width: min(1280px, 94%);
+    margin: 0 auto;
+    min-height: 400px;
     display: flex;
-    flex-direction: column;
+    align-items: center;
 }
 
-.functionalities-list{
-    display:flex;
+.home-hero-card {
+    width: min(860px, 92%);
+    background: rgba(255, 250, 245, 0.48);
+    backdrop-filter: blur(2px);
+    border: 1px solid rgba(255, 255, 255, 0.22);
+    border-radius: 18px;
+    box-shadow: none;
+    padding: 24px 28px;
+}
+
+.home-hero-eyebrow {
+    margin: 0 0 10px;
+    font-size: 0.82rem;
+    font-weight: 700;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: #7a675d;
+    font-family: Inter, ui-sans-serif, system-ui, sans-serif;
+}
+
+.home-hero-title {
+    margin: 0 0 12px;
+    color: #2f3b3b;
+    font-size: clamp(1.45rem, 2.35vw, 2.25rem);
+    line-height: 1.12;
+    font-weight: 800;
+    letter-spacing: -0.02em;
+    font-family: Georgia, "Times New Roman", serif;
+    max-width: 760px;
+}
+
+.home-hero-body {
+    margin: 0 0 18px;
+    color: #4f4a46;
+    font-size: 0.95rem;
+    line-height: 1.7;
+    font-family: Inter, ui-sans-serif, system-ui, sans-serif;
+    max-width: 720px;
+}
+
+.home-hero-button {
+    display: inline-flex;
     align-items: center;
     justify-content: center;
-}
-
-.functionalities{
-    margin:0;
-    width: 20%;
-    height: 200px;
-    background-color: #223030;
-    border: 1px solid black;
-    color:white;
-    font-size: 20px;
-    font-weight:600;
-    margin: 3%;
-    padding-top:20px;
-    padding-left: 20px;
-    padding-right: 20px;
-    box-shadow: 5px 5px 10px rgba(0, 0, 0, 0.5);
-}
-
-.functionalities>i{
-    font-size: 40px;
-}
-
-.rate{
-    padding-bottom: 30px;
-}
-
-.recent-activity-block{
-    display: flex;
-    flex-direction: column;
-}
-
-.recent-activity-block-text{
-    padding-top: 2%;
-    text-align: center;
-    font-family: 'Cardo', serif;
-    color:#523D35;
-    font-weight: 900;
-    font-size: 30px;
-}
-
-hr{
-    width: 98%;
-    margin:auto;
-}
-
-.brewing{
-    text-align: center;
-    padding: 20px;
-    font-size: 18px;
-    font-style: italic;
-}
-
-.recent-reviews-container{
-    display: flex;
-    overflow-x: auto;
-    margin: 0;
-    padding: 2%;
-    justify-content: space-between;
-}
-
-.recent-reviews-container>i{
-    align-self: center;
-    font-size: 40px;
-}
-
-.recent-activity-list{
-    display: flex;
-    overflow-x: auto;
-    margin: 0;
-    padding: 2%;
-    justify-content: space-between;
-}
-
-.review {
-    display: flex;
-    flex-direction: column;
-    box-shadow: 5px 5px 10px rgba(0, 0, 0, 0.5);
-    border-radius: 5px;
-    margin-bottom: 20px;
-    width: 40%;
-    margin-right: 20px;
-}
-
-.review-image-caption-container{
-    padding: 2%;
-    display:flex;
-}
-
-.place-name{
-    font-family:'Biryani', 'sans-serif';
-    margin-top: 10px;
-    margin-bottom: -10px;
-    font-size: 30px;
+    min-width: 146px;
+    padding: 11px 20px;
+    border-radius: 12px;
+    border: 1px solid #6a4b3f;
+    background: #6a4b3f;
+    color: #fff;
+    text-decoration: none;
+    font-family: Inter, ui-sans-serif, system-ui, sans-serif;
+    font-size: 0.94rem;
     font-weight: 700;
+    transition: 0.2s ease;
 }
 
-.caption{
-    font-family:'Biryani', 'sans-serif';
-    font-weight: 500;
+.home-hero-button:hover {
+    background: #fffaf5;
+    color: #6a4b3f;
 }
 
-.date-posted{
-    font-family:'Biryani', 'sans-serif';
+/* shared section header */
+.home-section-header {
+    text-align: center;
+    margin-bottom: 26px;
+}
+
+.home-section-eyebrow {
+    margin: 0 0 8px;
+    font-size: 0.82rem;
+    font-weight: 700;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: #7a675d;
+    font-family: Inter, ui-sans-serif, system-ui, sans-serif;
+}
+
+.home-section-title {
+    margin: 0;
+    color: #523D35;
+    font-size: clamp(2rem, 3vw, 3rem);
+    line-height: 1.08;
+    font-weight: 800;
+    letter-spacing: -0.03em;
+    font-family: Georgia, "Times New Roman", serif;
+}
+
+/* features */
+.home-features {
+    width: min(1280px, 94%);
+    margin: 56px auto 0;
+}
+
+.home-feature-grid {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 26px;
+}
+
+.home-feature-card {
+    background: #223030;
+    color: #fff;
+    border-radius: 28px;
+    box-shadow: 0 16px 34px rgba(47, 59, 59, 0.14);
+    padding: 30px 28px;
+    min-height: 220px;
+}
+
+.home-feature-icon {
+    width: 58px;
+    height: 58px;
+    border-radius: 18px;
+    background: rgba(255, 255, 255, 0.08);
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 26px;
+    margin-bottom: 20px;
+}
+
+.home-feature-card h3 {
+    margin: 0 0 12px;
+    font-size: 1.45rem;
+    line-height: 1.25;
+    font-weight: 800;
+    font-family: Inter, ui-sans-serif, system-ui, sans-serif;
+}
+
+.home-feature-card p {
+    margin: 0;
+    font-size: 1rem;
+    line-height: 1.8;
+    color: rgba(255, 255, 255, 0.88);
+    font-family: Inter, ui-sans-serif, system-ui, sans-serif;
+}
+
+/* reviews */
+.home-reviews {
+    width: min(1280px, 94%);
+    margin: 52px auto 72px;
+    padding-top: 26px;
+    border-top: 1px solid rgba(82, 61, 53, 0.10);
+}
+
+.home-empty-state {
+    text-align: center;
+    padding: 24px;
+    color: #756964;
+    font-size: 1rem;
+    line-height: 1.7;
     font-style: italic;
-    color:darkgray;
-    align-self: flex-end;
-
+    font-family: Inter, ui-sans-serif, system-ui, sans-serif;
 }
 
-.user-profile {
+.home-review-grid {
     display: flex;
-    align-items: center; 
-    justify-content: space-between;
-    background-color: #BBA58E;
-    padding-left: 2%;
+    gap: 18px;
+    overflow-x: auto;
+    padding: 4px 2px 12px;
+    scroll-behavior: smooth;
 }
 
-.user-profile >p{
-    font-size: 30px;
-    padding-right: 2%;
-    color: white;
-    text-align: right;
-
+.home-review-grid::-webkit-scrollbar {
+    height: 10px;
 }
 
-.user-profile img {
-    width: 75px;
-    height: 60px;
-    margin: 4%;
+.home-review-grid::-webkit-scrollbar-thumb {
+    background: rgba(82, 61, 53, 0.22);
+    border-radius: 999px;
+}
+
+.home-review-grid::-webkit-scrollbar-track {
+    background: transparent;
+}
+
+.home-review-card {
+    flex: 0 0 330px;
+    background: #fffaf5;
+    border: 1px solid rgba(82, 61, 53, 0.07);
+    border-radius: 18px;
+    box-shadow: 0 4px 12px rgba(47, 59, 59, 0.03);
     overflow: hidden;
-    border: 2px solid #F5F5F5;
-    border-radius: 50%;
-    margin-right: 10px;
 }
 
-.profile-text{
-    width: 70%;
-}
-
-.display-name {
-    font-weight: bold;
-    font-family: 'Biryani', sans-serif;
-    color: white;
-}
-
-.username {
-    font-family: 'Biryani', sans-serif;
-    font-size: small;
-    color: white;
-}
-
-.profile-image-username-container{
+.home-review-top {
     display: flex;
     align-items: center;
+    justify-content: space-between;
+    gap: 14px;
+    padding: 14px 16px;
+    background: #ccb79f;
 }
 
-.review-photo-box {
-    border: 2px solid white;
-    max-width: 200px;
-    max-height: 250px;  
-    border-radius: 5px; 
-    overflow: hidden; 
-    margin-right: 10px; 
+.home-review-user {
+    min-width: 0;
 }
 
-.review-photo {
-    width: 100%; 
-    height: auto; 
-    object-position: bottom bottom;
-} 
+.home-review-user .user-profile-establishment,
+.home-review-user .profile-image-username-container {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+.home-review-user img {
+    width: 48px;
+    height: 48px;
+    object-fit: cover;
+    border-radius: 50%;
+    background: #ece6de;
+    border: 2px solid rgba(255, 255, 255, 0.68);
+}
+
+.home-review-user .display-name {
+    display: block;
+    color: #fff;
+    font-size: 0.96rem;
+    font-weight: 800;
+    font-family: Inter, ui-sans-serif, system-ui, sans-serif;
+}
+
+.home-review-user .username {
+    display: block;
+    color: rgba(255, 255, 255, 0.92);
+    font-size: 0.88rem;
+    font-family: Inter, ui-sans-serif, system-ui, sans-serif;
+}
+
+.home-review-rating {
+    flex-shrink: 0;
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    color: #FFD700;
+    font-weight: 800;
+    font-size: 1.2rem;
+    font-family: Inter, ui-sans-serif, system-ui, sans-serif;
+}
+
+.home-review-body {
+    padding: 16px 16px 18px;
+}
+
+.home-review-label {
+    margin: 0 0 6px;
+    font-size: 0.78rem;
+    font-weight: 700;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: #9a8f88;
+    font-family: Inter, ui-sans-serif, system-ui, sans-serif;
+}
+
+.home-review-place {
+    display: inline-block;
+    margin-bottom: 8px;
+    color: #523D35;
+    text-decoration: none;
+    font-size: 1.08rem;
+    font-weight: 800;
+    line-height: 1.25;
+    font-family: Georgia, "Times New Roman", serif;
+    cursor: pointer;
+}
+
+.home-review-title {
+    margin: 0 0 8px;
+    color: #2f3b3b;
+    font-size: 1rem;
+    font-weight: 800;
+    line-height: 1.35;
+    font-family: Inter, ui-sans-serif, system-ui, sans-serif;
+}
+
+.home-review-caption {
+    margin: 0;
+    color: #5f5853;
+    font-size: 0.93rem;
+    line-height: 1.65;
+    font-family: Inter, ui-sans-serif, system-ui, sans-serif;
+}
+
+@media (max-width: 1024px) {
+    .home-feature-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .home-hero {
+        min-height: 360px;
+    }
+
+    .home-hero-content {
+        min-height: 360px;
+    }
+
+    .home-hero-card {
+        width: 100%;
+    }
+
+    .home-review-card {
+        flex: 0 0 300px;
+    }
+}
+
+@media (max-width: 640px) {
+    .home-hero-card {
+        padding: 22px 18px;
+        border-radius: 16px;
+    }
+
+    .home-hero-title {
+        font-size: 1.55rem;
+    }
+
+    .home-hero-body {
+        font-size: 0.92rem;
+    }
+
+    .home-feature-card {
+        min-height: auto;
+    }
+
+    .home-review-card {
+        flex: 0 0 280px;
+    }
+}
