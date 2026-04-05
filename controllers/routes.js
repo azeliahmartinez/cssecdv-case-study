@@ -12,6 +12,86 @@ const multer = require('multer');
 const path = require('path');
 const { requireAuth, requireRole } = require('./authMiddleware');
 const PASSWORD_REGEX = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d).{8,}$/;
+const RECOVERY_Q_MIN = 8;
+const RECOVERY_A_MIN = 8;
+
+const WEAK_RECOVERY_ANSWERS = new Set([
+  'password', '12345678', '123456789', 'the bible', 'bible', 'jesus', 'christ',
+  'love', 'blue', 'red', 'green', 'pizza', 'football', 'soccer', 'admin',
+  'qwerty', 'letmein', 'welcome', 'monkey', 'dragon', 'master', 'sunshine'
+]);
+
+function normalizeRecoveryAnswer(s) {
+  return String(s || '').trim().toLowerCase();
+}
+
+function validateRecoveryPair(question, answer) {
+  const q = String(question || '').trim();
+  const a = normalizeRecoveryAnswer(answer);
+  if (!q && !a) return null;
+  if (!q || !a) {
+    return 'Recovery question and answer must both be filled, or leave both empty.';
+  }
+  if (q.length < RECOVERY_Q_MIN) {
+    return `Recovery question must be at least ${RECOVERY_Q_MIN} characters.`;
+  }
+  if (a.length < RECOVERY_A_MIN) {
+    return `Recovery answer must be at least ${RECOVERY_A_MIN} characters — use a random phrase, not a common word.`;
+  }
+  if (WEAK_RECOVERY_ANSWERS.has(a)) {
+    return 'Choose a less common recovery answer (avoid popular books, colors, or passwords).';
+  }
+  return null;
+}
+
+function clearPasswordResetSession(req) {
+  req.session.resetOTP = null;
+  req.session.resetEmail = null;
+  req.session.resetOTPExpires = null;
+  req.session.resetMode = null;
+  req.session.resetQuestionExpires = null;
+}
+
+async function finalizeForgottenPasswordReset(user, password, req, auditMessage) {
+  if (!password || password.trim().length === 0) {
+    return { ok: false, message: 'Password cannot be empty' };
+  }
+  if (!PASSWORD_REGEX.test(password)) {
+    return {
+      ok: false,
+      message: 'Password must contain uppercase, lowercase, number, and 8+ chars'
+    };
+  }
+  if (user.passwordChangedAt) {
+    const oneDay = 24 * 60 * 60 * 1000;
+    const timeSinceLastChange = Date.now() - new Date(user.passwordChangedAt).getTime();
+    if (timeSinceLastChange < oneDay) {
+      return {
+        ok: false,
+        message: 'You can only change your password once every 24 hours'
+      };
+    }
+  }
+  const isReused = await Promise.all(
+    (user.passwordHistory || []).map(p => bcrypt.compare(password, p))
+  );
+  if (isReused.includes(true)) {
+    return { ok: false, message: 'Cannot reuse previous passwords' };
+  }
+  const hashedPassword = await bcrypt.hash(password, 10);
+  if (!user.passwordHistory) user.passwordHistory = [];
+  user.passwordHistory.push(user.password);
+  if (user.passwordHistory.length > 3) {
+    user.passwordHistory.shift();
+  }
+  user.password = hashedPassword;
+  user.passwordChangedAt = Date.now();
+  await user.save();
+  clearPasswordResetSession(req);
+  await logAction(null, auditMessage);
+  return { ok: true };
+}
+
 async function logAction(req, actionText) {
   try {
     await auditModel.create({
@@ -199,14 +279,20 @@ function addRoutes(server) {
   // route for creating user in the database
   router.post('/create-user', function(req, resp) {
   const saltRounds = 10;
+  const recoveryQuestion = String(req.body.recoveryQuestion || '').trim();
+  const recoveryAnswer = String(req.body.recoveryAnswer || '').trim();
+  const recoveryErr = validateRecoveryPair(recoveryQuestion, recoveryAnswer);
+  if (recoveryErr) {
+    return resp.status(400).json({ status: 'error', message: recoveryErr });
+  }
 
   userModel.findOne({ username: req.body.username }).then(existingUser => {
     if (existingUser) {
       return resp.status(400).json({ status: 'error', message: 'Username already exists. Please choose another one.' });
     }
 
-    bcrypt.hash(req.body.password, saltRounds).then(function(hashedPassword) {
-      const userInstance = userModel({
+    const buildUser = (hashedPassword, recoveryAnswerHash) => {
+      const payload = {
         name: req.body.name,
         username: req.body.username,
         bio: req.body.bio,
@@ -215,10 +301,24 @@ function addRoutes(server) {
         userType: 'rater', // force public registration to Role B only
         following: [],
         followers: []
-      });
+      };
+      if (recoveryAnswerHash && recoveryQuestion) {
+        payload.recoveryQuestion = recoveryQuestion;
+        payload.recoveryAnswerHash = recoveryAnswerHash;
+      }
+      return userModel(payload).save();
+    };
 
-      return userInstance.save();
-    })
+    const hashChain = bcrypt.hash(req.body.password, saltRounds).then(function(hashedPassword) {
+      if (recoveryQuestion.length > 0 && recoveryAnswer.length > 0) {
+        return bcrypt.hash(normalizeRecoveryAnswer(recoveryAnswer), saltRounds).then((recoveryAnswerHash) =>
+          buildUser(hashedPassword, recoveryAnswerHash)
+        );
+      }
+      return buildUser(hashedPassword, null);
+    });
+
+    hashChain
     .then(function(user) {
       console.log('User created');
       req.session.username = user.username;
@@ -441,21 +541,35 @@ router.get('/forgotpassword', function (req, res) {
       return res.json({ success: false, message: 'Email not found' });
     }
 
-    // GENERATE OTP
+    if (user.recoveryAnswerHash && user.recoveryQuestion) {
+      req.session.resetMode = 'question';
+      req.session.resetEmail = email;
+      req.session.resetQuestionExpires = Date.now() + (10 * 60 * 1000);
+      req.session.resetOTP = null;
+      req.session.resetOTPExpires = null;
+      return res.json({
+        success: true,
+        mode: 'question',
+        question: user.recoveryQuestion,
+        message: 'Answer your recovery question to continue.'
+      });
+    }
+
     const otp = Math.floor(100000 + Math.random() * 900000).toString();
 
-    // ✅ STORE IN SESSION INSTEAD OF DB
+    req.session.resetMode = 'otp';
     req.session.resetOTP = otp;
     req.session.resetEmail = email;
     req.session.resetOTPExpires = Date.now() + (10 * 60 * 1000);
+    req.session.resetQuestionExpires = null;
 
     console.log(`OTP for ${email}: ${otp}`);
 
     return res.json({
       success: true,
+      mode: 'otp',
       message: 'OTP sent (check console)'
-});
-
+    });
   } catch (err) {
     console.error(err);
     res.status(500).json({ success: false });
@@ -463,92 +577,99 @@ router.get('/forgotpassword', function (req, res) {
 });
 
 router.post('/verify-reset', async (req, res) => {
-  const { email, otp, password } = req.body;
+  try {
+    const { email, otp, password, recoveryAnswer } = req.body;
 
-  const cleanOTP = String(otp).trim();
-
-  // CHECK SESSION INSTEAD OF DB
-  if (
-    req.session.resetEmail !== email ||
-    req.session.resetOTP !== cleanOTP ||
-    req.session.resetOTPExpires < Date.now()
-  ) {
-    return res.json({ success: false, message: 'Invalid or expired OTP' });
-  }
-
-  // FIND USER AFTER VALIDATION
-  const user = await userModel.findOne({ email });
-
-if (!user) {
-  return res.json({ success: false, message: 'User not found' });
-}
-  if (!user) {
-    return res.json({ success: false, message: 'Invalid or expired OTP' });
-  }
-  // EMPTY CHECK
-if (!password || password.trim().length === 0) {
-  return res.json({
-    success: false,
-    message: 'Password cannot be empty'
-  });
-}
-
-// PASSWORD COMPLEXITY (SAME AS REGISTRATION)
-if (!PASSWORD_REGEX.test(password)) {
-  return res.json({
-    success: false,
-    message: 'Password must contain uppercase, lowercase, number, and 8+ chars'
-  });
-}
-
-  // PREVENT FREQUENT CHANGE (SAME AS CHANGE PASSWORD)
-  if (user.passwordChangedAt) {
-    const oneDay = 24 * 60 * 60 * 1000;
-    const timeSinceLastChange = Date.now() - new Date(user.passwordChangedAt).getTime();
-
-    if (timeSinceLastChange < oneDay) {
-      return res.json({
-        success: false,
-        message: 'You can only change your password once every 24 hours'
-      });
+    const user = await userModel.findOne({ email });
+    if (!user) {
+      return res.json({ success: false, message: 'Invalid or expired OTP' });
     }
+
+    const questionSessionOk =
+      req.session.resetMode === 'question' &&
+      req.session.resetEmail === email &&
+      (req.session.resetQuestionExpires || 0) > Date.now();
+
+    if (questionSessionOk) {
+      if (!user.recoveryAnswerHash) {
+        return res.json({ success: false, message: 'Recovery is not set for this account' });
+      }
+      const answerOk = await bcrypt.compare(
+        normalizeRecoveryAnswer(recoveryAnswer),
+        user.recoveryAnswerHash
+      );
+      if (!answerOk) {
+        return res.json({ success: false, message: 'Incorrect recovery answer' });
+      }
+      const result = await finalizeForgottenPasswordReset(
+        user,
+        password,
+        req,
+        `Password reset with recovery question: ${email}`
+      );
+      if (!result.ok) {
+        return res.json({ success: false, message: result.message });
+      }
+      return res.json({ success: true, message: 'Password reset successful' });
+    }
+
+    const cleanOTP = String(otp || '').trim();
+    if (
+      req.session.resetEmail !== email ||
+      req.session.resetOTP !== cleanOTP ||
+      req.session.resetOTPExpires < Date.now()
+    ) {
+      return res.json({ success: false, message: 'Invalid or expired OTP' });
+    }
+
+    const result = await finalizeForgottenPasswordReset(
+      user,
+      password,
+      req,
+      `Password reset with OTP: ${email}`
+    );
+    if (!result.ok) {
+      return res.json({ success: false, message: result.message });
+    }
+    return res.json({ success: true, message: 'Password reset successful' });
+  } catch (err) {
+    console.error(err);
+    return res.status(500).json({ success: false, message: 'Server error' });
   }
+});
 
-  // PASSWORD REUSE CHECK (SAME AS CHANGE PASSWORD)
-  const isReused = await Promise.all(
-    (user.passwordHistory || []).map(p => bcrypt.compare(password, p))
-  );
+router.post('/set-recovery', requireAuth, async (req, res) => {
+  try {
+    const { currentPassword, recoveryQuestion, recoveryAnswer } = req.body;
+    const username = req.session.username;
 
-  if (isReused.includes(true)) {
-    return res.json({
-      success: false,
-      message: 'Cannot reuse previous passwords'
-    });
+    const err = validateRecoveryPair(recoveryQuestion, recoveryAnswer);
+    if (err) {
+      return res.json({ success: false, message: err });
+    }
+
+    const user = await userModel.findOne({ username });
+    if (!user) {
+      return res.json({ success: false, message: 'User not found' });
+    }
+
+    const match = await bcrypt.compare(currentPassword, user.password);
+    if (!match) {
+      return res.json({ success: false, message: 'Current password is incorrect' });
+    }
+
+    user.recoveryQuestion = String(recoveryQuestion).trim();
+    user.recoveryAnswerHash = await bcrypt.hash(
+      normalizeRecoveryAnswer(recoveryAnswer),
+      10
+    );
+    await user.save();
+    await logAction(req, 'Updated password recovery question');
+    return res.json({ success: true, message: 'Recovery settings saved' });
+  } catch (e) {
+    console.error(e);
+    return res.status(500).json({ success: false, message: 'Server error' });
   }
-
-  const hashedPassword = await bcrypt.hash(password, 10);
-
-
-  if (!user.passwordHistory) user.passwordHistory = [];
-
-  user.passwordHistory.push(user.password);
-
-  if (user.passwordHistory.length > 3) {
-    user.passwordHistory.shift();
-  }
-
-  user.password = hashedPassword;
-  user.passwordChangedAt = Date.now();
-
-  await user.save();
-
-  req.session.resetOTP = null;
-  req.session.resetEmail = null;
-  req.session.resetOTPExpires = null;
-
-  await logAction(null, `Password reset with OTP: ${email}`);
-
-  res.json({ success: true, message: 'Password reset successful' });
 });
 
 router.get('/reset-password/:token', async (req, res) => {

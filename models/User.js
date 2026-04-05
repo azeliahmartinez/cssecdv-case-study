@@ -33,7 +33,11 @@ lastLoginSuccess: Boolean,
 passwordHistory: { type: [String], default: [] },
 passwordChangedAt: { type: Date },
 resetPasswordToken: String,
-resetPasswordExpires: Date
+resetPasswordExpires: Date,
+
+// Optional password recovery (custom question + bcrypt-hashed answer)
+recoveryQuestion: { type: String },
+recoveryAnswerHash: { type: String }
 }, { versionKey: false });
 
 // user model

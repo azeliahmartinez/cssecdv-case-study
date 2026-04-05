@@ -16,6 +16,9 @@ function togglePasswordVisibility(passwordFieldId, toggleIconId) {
     }
 }
 
+// forgot-password flow: 'none' | 'otp' | 'question'
+var forgotPasswordResetMode = 'none';
+
 // function when submitting the form of a new registered user
 function submitForm() {
     let nameString = document.forms["create-user"]["name"].value;
@@ -24,6 +27,12 @@ function submitForm() {
     let bioString = document.forms["create-user"]["bio"].value;
     let pass1String = document.forms["create-user"]["password"].value;
     let pass2String = document.forms["create-user"]["password2"].value;
+    const recoveryQ = document.getElementById('recovery-question-field')
+        ? document.getElementById('recovery-question-field').value.trim()
+        : '';
+    const recoveryA = document.getElementById('recovery-answer-field-reg')
+        ? document.getElementById('recovery-answer-field-reg').value.trim()
+        : '';
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
     const passwordRegex = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)[a-zA-Z\d]{8,}$/;
 
@@ -50,6 +59,21 @@ function submitForm() {
         return false;
     }
 
+    if ((recoveryQ && !recoveryA) || (!recoveryQ && recoveryA)) {
+        alert("Recovery question and answer must both be filled, or leave both empty.");
+        return false;
+    }
+    if (recoveryQ && recoveryA) {
+        if (recoveryQ.length < 8) {
+            alert("Recovery question must be at least 8 characters (use your own wording).");
+            return false;
+        }
+        if (recoveryA.length < 8) {
+            alert("Recovery answer must be at least 8 characters — use a random phrase, not a common book or color.");
+            return false;
+        }
+    }
+
     // making a POST request to the server to create a new user
     fetch('/create-user', {
         method: 'POST',
@@ -61,7 +85,9 @@ function submitForm() {
             username: usernameString,
             bio: bioString,
             email: emailString,
-            password: pass1String
+            password: pass1String,
+            recoveryQuestion: recoveryQ || undefined,
+            recoveryAnswer: recoveryA || undefined
         })
     })
     .then(response => {
@@ -76,7 +102,7 @@ function submitForm() {
             alert(data.message);
             window.location.href = 'registrationAvatar';
         } else {
-            alert('Failed to create user: ' + data.message);
+            alert('Failed to create user: ' + (data && data.message ? data.message : 'Unknown error'));
         }
     })
     .catch(error => {
@@ -181,7 +207,8 @@ function submitLoginForm() {
 
 function submitChangePasswordForm() {
     let currentPassword = document.getElementById("current-password").value;
-    let newPassword = document.getElementById("new-password").value;
+    let newPasswordField = document.getElementById("logged-in-new-password");
+    let newPassword = newPasswordField ? newPasswordField.value : '';
 
     const passwordRegex = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d).{8,}$/;
 
@@ -491,13 +518,21 @@ function submitAdminDeleteUserForm(event, form, userId) {
 
 function submitForgotPasswordForm() {
     let email = document.getElementById("email-field").value;
-    let otp = document.getElementById("otp-field").value;
     let password = document.getElementById("new-password").value;
+
+    const payload = { email, password };
+    if (forgotPasswordResetMode === 'question') {
+        const recoveryAnswer = document.getElementById("recovery-answer-field");
+        payload.recoveryAnswer = recoveryAnswer ? recoveryAnswer.value : '';
+        payload.otp = '';
+    } else {
+        payload.otp = document.getElementById("otp-field").value;
+    }
 
     fetch('/verify-reset', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ email, otp, password })
+        body: JSON.stringify(payload)
     })
     .then(res => res.json())
     .then(data => {
@@ -524,9 +559,73 @@ function sendOTP() {
     .then(res => res.json())
     .then(data => {
         alert(data.message);
+        const otpBlock = document.getElementById("otp-block");
+        const recoveryBlock = document.getElementById("recovery-block");
+        const questionText = document.getElementById("recovery-question-text");
+        if (data.success && data.mode === 'question') {
+            forgotPasswordResetMode = 'question';
+            if (questionText) questionText.textContent = data.question || '';
+            if (otpBlock) otpBlock.style.display = 'none';
+            if (recoveryBlock) recoveryBlock.style.display = 'block';
+        } else if (data.success && data.mode === 'otp') {
+            forgotPasswordResetMode = 'otp';
+            if (otpBlock) otpBlock.style.display = 'block';
+            if (recoveryBlock) recoveryBlock.style.display = 'none';
+        } else {
+            forgotPasswordResetMode = 'none';
+        }
     })
     .catch(err => {
         console.error(err);
         alert("Error sending OTP");
     });
+}
+
+function submitSetRecoveryForm() {
+    const pwEl = document.getElementById('recovery-current-pw');
+    const qEl = document.getElementById('recovery-q-setup');
+    const aEl = document.getElementById('recovery-a-setup');
+    if (!pwEl || !qEl || !aEl) return false;
+    return submitSetRecoveryWithFields(
+        pwEl.value,
+        qEl.value,
+        aEl.value,
+        function onSuccess() {
+            pwEl.value = '';
+            aEl.value = '';
+        }
+    );
+}
+
+function submitSetRecoveryWithFields(currentPassword, recoveryQuestion, recoveryAnswer, onSuccess) {
+
+    if (!currentPassword || !recoveryQuestion || !recoveryAnswer) {
+        alert('Fill current password, recovery question, and answer.');
+        return false;
+    }
+    if (recoveryQuestion.trim().length < 8) {
+        alert('Recovery question must be at least 8 characters.');
+        return false;
+    }
+    if (recoveryAnswer.trim().length < 8) {
+        alert('Recovery answer must be at least 8 characters.');
+        return false;
+    }
+
+    fetch('/set-recovery', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ currentPassword, recoveryQuestion, recoveryAnswer })
+    })
+    .then(res => res.json())
+    .then(data => {
+        alert(data.message || (data.success ? 'Saved' : 'Failed'));
+        if (data.success && typeof onSuccess === 'function') onSuccess();
+    })
+    .catch(err => {
+        console.error(err);
+        alert('Error saving recovery settings');
+    });
+
+    return false;
 }
