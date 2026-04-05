@@ -35,8 +35,11 @@
             {{#if logs.length}}
                 {{#each logs}}
                 <div class="admin-log-item">
-                    <div><b>{{user}}</b> ({{role}})</div>
+                    <div><b>{{user}}</b> ({{role}}){{#if status}} · {{status}}{{/if}}{{#if category}} · {{category}}{{/if}}</div>
                     <div>{{action}}</div>
+                    {{#if details}}<div style="font-size:12px;color:#666;">{{details}}</div>{{/if}}
+                    {{#if target}}<div style="font-size:12px;color:#666;">{{target}}</div>{{/if}}
+                    {{#if ipAddress}}<div style="font-size:12px;color:gray;">{{ipAddress}}</div>{{/if}}
                     <div style="font-size:12px;color:gray;">
                         {{timestamp}}
                     </div>

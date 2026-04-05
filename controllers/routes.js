@@ -11,6 +11,7 @@ const moment = require('moment');
 const multer = require('multer');
 const path = require('path');
 const { requireAuth, requireRole } = require('./authMiddleware');
+const { logAudit, logAuditFireAndForget } = require('./auditLogger');
 const PASSWORD_REGEX = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d).{8,}$/;
 const RECOVERY_Q_MIN = 8;
 const RECOVERY_A_MIN = 8;
@@ -88,21 +89,30 @@ async function finalizeForgottenPasswordReset(user, password, req, auditMessage)
   user.passwordChangedAt = Date.now();
   await user.save();
   clearPasswordResetSession(req);
-  await logAction(null, auditMessage);
+  await logAudit({
+    req,
+    username: user.email,
+    userType: user.userType || 'none',
+    action: 'password reset',
+    status: 'success',
+    category: 'authentication',
+    details: auditMessage,
+    target: user.email
+  });
   return { ok: true };
 }
 
-async function logAction(req, actionText) {
-  try {
-    await auditModel.create({
-      action: actionText,
-      user: req?.session?.username || 'System',
-      role: req?.session?.userType || 'System',
-      timestamp: new Date()
-    });
-  } catch (err) {
-    console.error('Audit log error:', err);
-  }
+async function logAction(req, actionText, meta = {}) {
+  await logAudit({
+    req,
+    username: meta.username,
+    userType: meta.userType,
+    action: meta.action || actionText,
+    status: meta.status || 'success',
+    category: meta.category || 'general',
+    details: meta.details !== undefined ? meta.details : actionText,
+    target: meta.target || ''
+  });
 }
 
 function hashPassword(password) {
@@ -283,11 +293,31 @@ function addRoutes(server) {
   const recoveryAnswer = String(req.body.recoveryAnswer || '').trim();
   const recoveryErr = validateRecoveryPair(recoveryQuestion, recoveryAnswer);
   if (recoveryErr) {
+    logAuditFireAndForget({
+      req,
+      username: req.body.username || 'anonymous',
+      userType: 'none',
+      action: 'register',
+      status: 'failure',
+      category: 'validation',
+      details: recoveryErr,
+      target: req.body.email || ''
+    });
     return resp.status(400).json({ status: 'error', message: recoveryErr });
   }
 
   userModel.findOne({ username: req.body.username }).then(existingUser => {
     if (existingUser) {
+      logAuditFireAndForget({
+        req,
+        username: req.body.username || 'unknown',
+        userType: 'none',
+        action: 'register',
+        status: 'failure',
+        category: 'validation',
+        details: 'Duplicate username',
+        target: req.body.username || ''
+      });
       return resp.status(400).json({ status: 'error', message: 'Username already exists. Please choose another one.' });
     }
 
@@ -325,10 +355,30 @@ function addRoutes(server) {
       req.session.name = user.name;
       req.session.user_icon = user.user_icon;
       req.session.userType = user.userType;
+      logAuditFireAndForget({
+        req,
+        username: user.username,
+        userType: user.userType,
+        action: 'register',
+        status: 'success',
+        category: 'authentication',
+        details: 'Account created',
+        target: user.email || user.username
+      });
       resp.json({ success: true, message: 'User created successfully' });
     })
     .catch(function(error) {
       errorFn(error);
+      logAuditFireAndForget({
+        req,
+        username: req.body.username || 'unknown',
+        userType: 'none',
+        action: 'register',
+        status: 'failure',
+        category: 'validation',
+        details: 'Server error during registration',
+        target: req.body.email || ''
+      });
       resp.status(500).json({ status: 'error', message: 'Internal Server Error' });
     });
   });
@@ -410,11 +460,31 @@ router.post('/read-user', async function(req, resp) {
     const user = await userModel.findOne({ username });
 
     if (!user) {
+      await logAudit({
+        req,
+        username: username || 'unknown',
+        userType: 'none',
+        action: 'login',
+        status: 'failure',
+        category: 'authentication',
+        details: 'Unknown username',
+        target: username || ''
+      });
       return resp.json({ success: false, message: 'Invalid credentials' });
     }
 
     // CHECK IF ACCOUNT IS LOCKED
     if (user.lockUntil && user.lockUntil > Date.now()) {
+      await logAudit({
+        req,
+        username: user.username,
+        userType: user.userType,
+        action: 'login',
+        status: 'failure',
+        category: 'authentication',
+        details: 'Account locked',
+        target: user.username
+      });
       return resp.json({
         success: false,
         message: 'Account is locked. Try again later.'
@@ -431,10 +501,30 @@ router.post('/read-user', async function(req, resp) {
       if (user.loginAttempts >= 5) {
         user.lockUntil = Date.now() + (15 * 60 * 1000);
 
-        await logAction(req, `Account locked: ${user.username}`);
+        await logAudit({
+          req,
+          username: user.username,
+          userType: user.userType,
+          action: 'account lockout',
+          status: 'failure',
+          category: 'authentication',
+          details: 'Too many failed login attempts',
+          target: user.username
+        });
       }
 
       await user.save();
+
+      await logAudit({
+        req,
+        username: user.username,
+        userType: user.userType,
+        action: 'login',
+        status: 'failure',
+        category: 'authentication',
+        details: 'Invalid password',
+        target: user.username
+      });
 
       return resp.json({
         success: false,
@@ -487,7 +577,16 @@ await user.save();
       });
     }
 
-    await logAction(req, `User logged in: ${req.session.username}`);
+    await logAudit({
+      req,
+      username: user.username,
+      userType: user.userType,
+      action: 'login',
+      status: 'success',
+      category: 'authentication',
+      details: 'Session created',
+      target: user.username
+    });
 
     // REDIRECT
     if (user.userType === 'admin') {
@@ -506,17 +605,49 @@ await user.save();
 
   } catch (error) {
     console.error(error);
+    await logAudit({
+      req,
+      username: 'unknown',
+      userType: 'none',
+      action: 'login',
+      status: 'failure',
+      category: 'authentication',
+      details: 'Server error during login',
+      target: ''
+    });
     resp.status(500).json({ success: false });
   }
 });
 
     // logout route
     router.get('/logout', function(req, res) {
+      const logUser = req.session && req.session.username;
+      const logRole = (req.session && req.session.userType) || 'none';
       req.session.destroy(function(error) {
         if (error) {
           console.error('Error destroying session:', error);
+          logAuditFireAndForget({
+            req,
+            username: logUser || 'unknown',
+            userType: logRole,
+            action: 'logout',
+            status: 'failure',
+            category: 'authentication',
+            details: 'Session destroy failed',
+            target: ''
+          });
           res.status(500).json({ success: false, message: 'Failed to logout' });
         } else {
+          logAuditFireAndForget({
+            req,
+            username: logUser || 'anonymous',
+            userType: logRole,
+            action: 'logout',
+            status: 'success',
+            category: 'authentication',
+            details: 'Session destroyed',
+            target: logUser || ''
+          });
           res.redirect('/');
         }
       });
@@ -538,6 +669,16 @@ router.get('/forgotpassword', function (req, res) {
     const user = await userModel.findOne({ email });
 
     if (!user) {
+      await logAudit({
+        req,
+        username: 'anonymous',
+        userType: 'none',
+        action: 'password reset request',
+        status: 'failure',
+        category: 'authentication',
+        details: 'Email not found',
+        target: email || ''
+      });
       return res.json({ success: false, message: 'Email not found' });
     }
 
@@ -547,6 +688,16 @@ router.get('/forgotpassword', function (req, res) {
       req.session.resetQuestionExpires = Date.now() + (10 * 60 * 1000);
       req.session.resetOTP = null;
       req.session.resetOTPExpires = null;
+      await logAudit({
+        req,
+        username: user.username,
+        userType: user.userType,
+        action: 'password reset request',
+        status: 'success',
+        category: 'authentication',
+        details: 'Recovery question flow started',
+        target: email
+      });
       return res.json({
         success: true,
         mode: 'question',
@@ -565,6 +716,17 @@ router.get('/forgotpassword', function (req, res) {
 
     console.log(`OTP for ${email}: ${otp}`);
 
+    await logAudit({
+      req,
+      username: user.username,
+      userType: user.userType,
+      action: 'password reset request',
+      status: 'success',
+      category: 'authentication',
+      details: 'OTP issued (dev console)',
+      target: email
+    });
+
     return res.json({
       success: true,
       mode: 'otp',
@@ -582,6 +744,16 @@ router.post('/verify-reset', async (req, res) => {
 
     const user = await userModel.findOne({ email });
     if (!user) {
+      await logAudit({
+        req,
+        username: 'anonymous',
+        userType: 'none',
+        action: 'password reset',
+        status: 'failure',
+        category: 'authentication',
+        details: 'Email not found during reset',
+        target: email || ''
+      });
       return res.json({ success: false, message: 'Invalid or expired OTP' });
     }
 
@@ -592,6 +764,16 @@ router.post('/verify-reset', async (req, res) => {
 
     if (questionSessionOk) {
       if (!user.recoveryAnswerHash) {
+        await logAudit({
+          req,
+          username: user.username,
+          userType: user.userType,
+          action: 'password reset',
+          status: 'failure',
+          category: 'authentication',
+          details: 'Recovery not configured',
+          target: email
+        });
         return res.json({ success: false, message: 'Recovery is not set for this account' });
       }
       const answerOk = await bcrypt.compare(
@@ -599,6 +781,16 @@ router.post('/verify-reset', async (req, res) => {
         user.recoveryAnswerHash
       );
       if (!answerOk) {
+        await logAudit({
+          req,
+          username: user.username,
+          userType: user.userType,
+          action: 'password reset',
+          status: 'failure',
+          category: 'authentication',
+          details: 'Incorrect recovery answer',
+          target: email
+        });
         return res.json({ success: false, message: 'Incorrect recovery answer' });
       }
       const result = await finalizeForgottenPasswordReset(
@@ -608,6 +800,16 @@ router.post('/verify-reset', async (req, res) => {
         `Password reset with recovery question: ${email}`
       );
       if (!result.ok) {
+        await logAudit({
+          req,
+          username: user.username,
+          userType: user.userType,
+          action: 'password reset',
+          status: 'failure',
+          category: 'validation',
+          details: result.message,
+          target: email
+        });
         return res.json({ success: false, message: result.message });
       }
       return res.json({ success: true, message: 'Password reset successful' });
@@ -619,6 +821,16 @@ router.post('/verify-reset', async (req, res) => {
       req.session.resetOTP !== cleanOTP ||
       req.session.resetOTPExpires < Date.now()
     ) {
+      await logAudit({
+        req,
+        username: user.username,
+        userType: user.userType,
+        action: 'password reset',
+        status: 'failure',
+        category: 'authentication',
+        details: 'Invalid or expired OTP/session',
+        target: email
+      });
       return res.json({ success: false, message: 'Invalid or expired OTP' });
     }
 
@@ -629,6 +841,16 @@ router.post('/verify-reset', async (req, res) => {
       `Password reset with OTP: ${email}`
     );
     if (!result.ok) {
+      await logAudit({
+        req,
+        username: user.username,
+        userType: user.userType,
+        action: 'password reset',
+        status: 'failure',
+        category: 'validation',
+        details: result.message,
+        target: email
+      });
       return res.json({ success: false, message: result.message });
     }
     return res.json({ success: true, message: 'Password reset successful' });
@@ -645,16 +867,46 @@ router.post('/set-recovery', requireAuth, async (req, res) => {
 
     const err = validateRecoveryPair(recoveryQuestion, recoveryAnswer);
     if (err) {
+      await logAudit({
+        req,
+        username,
+        userType: req.session.userType,
+        action: 'set recovery phrase',
+        status: 'failure',
+        category: 'validation',
+        details: err,
+        target: username
+      });
       return res.json({ success: false, message: err });
     }
 
     const user = await userModel.findOne({ username });
     if (!user) {
+      await logAudit({
+        req,
+        username,
+        userType: req.session.userType,
+        action: 'set recovery phrase',
+        status: 'failure',
+        category: 'authentication',
+        details: 'User not found',
+        target: username
+      });
       return res.json({ success: false, message: 'User not found' });
     }
 
     const match = await bcrypt.compare(currentPassword, user.password);
     if (!match) {
+      await logAudit({
+        req,
+        username,
+        userType: req.session.userType,
+        action: 'set recovery phrase',
+        status: 'failure',
+        category: 'authentication',
+        details: 'Wrong current password',
+        target: username
+      });
       return res.json({ success: false, message: 'Current password is incorrect' });
     }
 
@@ -664,7 +916,12 @@ router.post('/set-recovery', requireAuth, async (req, res) => {
       10
     );
     await user.save();
-    await logAction(req, 'Updated password recovery question');
+    await logAction(req, 'Updated password recovery question', {
+      action: 'set recovery phrase',
+      category: 'authentication',
+      details: 'Recovery question updated',
+      target: username
+    });
     return res.json({ success: true, message: 'Recovery settings saved' });
   } catch (e) {
     console.error(e);
@@ -680,6 +937,16 @@ router.get('/reset-password/:token', async (req, res) => {
     });
 
     if (!user) {
+      logAuditFireAndForget({
+        req,
+        username: 'anonymous',
+        userType: 'none',
+        action: 'password reset',
+        status: 'failure',
+        category: 'authentication',
+        details: 'Invalid reset token (GET)',
+        target: req.params.token || ''
+      });
       return res.send("Invalid or expired token");
     }
 
@@ -704,6 +971,16 @@ router.post('/reset-password/:token', async (req, res) => {
     });
 
     if (!user) {
+      await logAudit({
+        req,
+        username: 'anonymous',
+        userType: 'none',
+        action: 'password reset',
+        status: 'failure',
+        category: 'authentication',
+        details: 'Invalid or expired token',
+        target: req.params.token || ''
+      });
       return res.json({ success: false, message: 'Invalid or expired token' });
     }
 
@@ -713,6 +990,16 @@ router.post('/reset-password/:token', async (req, res) => {
       const timeSinceLastChange = Date.now() - new Date(user.passwordChangedAt).getTime();
 
       if (timeSinceLastChange < oneDay) {
+        await logAudit({
+          req,
+          username: user.username,
+          userType: user.userType,
+          action: 'password reset',
+          status: 'failure',
+          category: 'validation',
+          details: '24h change limit',
+          target: user.email
+        });
         return res.json({
           success: false,
           message: 'You can only change your password once every 24 hours'
@@ -722,6 +1009,16 @@ router.post('/reset-password/:token', async (req, res) => {
 
     // PASSWORD COMPLEXITY
     if (!PASSWORD_REGEX.test(password)) {
+      await logAudit({
+        req,
+        username: user.username,
+        userType: user.userType,
+        action: 'password reset',
+        status: 'failure',
+        category: 'validation',
+        details: 'Password complexity failed',
+        target: user.email
+      });
       return res.json({
         success: false,
         message: 'Password must contain uppercase, lowercase, number, and 8+ chars'
@@ -734,6 +1031,16 @@ router.post('/reset-password/:token', async (req, res) => {
     );
 
     if (isReused.includes(true)) {
+      await logAudit({
+        req,
+        username: user.username,
+        userType: user.userType,
+        action: 'password reset',
+        status: 'failure',
+        category: 'validation',
+        details: 'Password reuse rejected',
+        target: user.email
+      });
       return res.json({
         success: false,
         message: 'Cannot reuse previous passwords'
@@ -760,8 +1067,16 @@ router.post('/reset-password/:token', async (req, res) => {
 
     await user.save();
 
-    // SAFE LOG (no session user)
-    await logAction(null, `Password reset via email: ${user.email}`);
+    await logAudit({
+      req,
+      username: user.username,
+      userType: user.userType,
+      action: 'password reset',
+      status: 'success',
+      category: 'authentication',
+      details: 'Password reset via email token',
+      target: user.email
+    });
 
     return res.json({
       success: true,
@@ -785,6 +1100,16 @@ router.post('/change-password', requireAuth, async function(req, resp) {
     const user = await userModel.findOne({ username });
 
     if (!user) {
+      await logAudit({
+        req,
+        username,
+        userType: req.session.userType,
+        action: 'change password',
+        status: 'failure',
+        category: 'authentication',
+        details: 'User not found',
+        target: username
+      });
       return resp.json({ success: false, message: 'User not found' });
     }
 
@@ -794,6 +1119,16 @@ router.post('/change-password', requireAuth, async function(req, resp) {
       const timeSinceLastChange = Date.now() - new Date(user.passwordChangedAt).getTime();
 
       if (timeSinceLastChange < oneDay) {
+        await logAudit({
+          req,
+          username,
+          userType: req.session.userType,
+          action: 'change password',
+          status: 'failure',
+          category: 'validation',
+          details: '24h change limit',
+          target: username
+        });
         return resp.json({
           success: false,
           message: 'You can only change your password once every 24 hours'
@@ -803,6 +1138,16 @@ router.post('/change-password', requireAuth, async function(req, resp) {
     // VERIFY CURRENT PASSWORD
     const match = await bcrypt.compare(currentPassword, user.password);
     if (!match) {
+      await logAudit({
+        req,
+        username,
+        userType: req.session.userType,
+        action: 'change password',
+        status: 'failure',
+        category: 'authentication',
+        details: 'Wrong current password',
+        target: username
+      });
       return resp.json({
         success: false,
         message: 'Current password is incorrect'
@@ -811,6 +1156,16 @@ router.post('/change-password', requireAuth, async function(req, resp) {
 
     // PASSWORD COMPLEXITY
     if (!PASSWORD_REGEX.test(newPassword)) {
+      await logAudit({
+        req,
+        username,
+        userType: req.session.userType,
+        action: 'change password',
+        status: 'failure',
+        category: 'validation',
+        details: 'Password complexity failed',
+        target: username
+      });
       return resp.json({
         success: false,
         message: 'Password must contain uppercase, lowercase, number, and 8+ chars'
@@ -823,6 +1178,16 @@ router.post('/change-password', requireAuth, async function(req, resp) {
     );
 
     if (isReused.includes(true)) {
+      await logAudit({
+        req,
+        username,
+        userType: req.session.userType,
+        action: 'change password',
+        status: 'failure',
+        category: 'validation',
+        details: 'Password reuse rejected',
+        target: username
+      });
       return resp.json({
         success: false,
         message: 'Cannot reuse previous passwords'
@@ -841,7 +1206,12 @@ router.post('/change-password', requireAuth, async function(req, resp) {
 
     await user.save();
 
-    await logAction(req, `Password changed`);
+    await logAction(req, 'Password changed', {
+      action: 'change password',
+      category: 'authentication',
+      details: 'Password updated while logged in',
+      target: username
+    });
 
     return resp.json({
       success: true,
@@ -1077,7 +1447,11 @@ router.post('/create-establishment',
     const est = await newEstablishment.save();
 
     // 🔥 AUDIT LOG (NOW WORKS)
-    await logAction(req, `Created establishment: ${est.establishment_name}`);
+    await logAction(req, `Created establishment: ${est.establishment_name}`, {
+      category: 'content',
+      action: 'create establishment',
+      target: est.establishment_name
+    });
 
     console.log("CREATED ESTABLISHMENT:", est);
 
@@ -1089,6 +1463,14 @@ router.post('/create-establishment',
 
   } catch (err) {
     console.error(err);
+    await logAudit({
+      req,
+      action: 'create establishment',
+      status: 'failure',
+      category: 'content',
+      details: err.message || 'Server error',
+      target: ''
+    });
     res.status(500).json({ success: false });
   }
 });
@@ -1149,9 +1531,25 @@ router.post('/admin/delete-user/:id',
     try {
       const user = await userModel.findById(req.params.id);
 
+      if (!user) {
+        await logAudit({
+          req,
+          action: 'delete user',
+          status: 'failure',
+          category: 'validation',
+          details: 'User id not found',
+          target: req.params.id
+        });
+        return res.status(404).json({ success: false, message: 'User not found' });
+      }
+
       await userModel.findByIdAndDelete(req.params.id);
 
-      await logAction(req, `Deleted user: ${user.username}`);
+      await logAction(req, `Deleted user: ${user.username}`, {
+        category: 'admin',
+        action: 'delete user',
+        target: user.username
+      });
       res.json({ success: true });
     } catch (err) {
       console.error(err);
@@ -1168,10 +1566,26 @@ router.post('/admin/create-user',
       const { name, username, email, password, userType } = req.body;
 
       if (!name || !username || !email || !password || !userType) {
+        await logAudit({
+          req,
+          action: 'create user',
+          status: 'failure',
+          category: 'validation',
+          details: 'Missing required fields',
+          target: username || email || ''
+        });
         return res.status(400).json({ success: false, message: 'All fields are required' });
       }
 
       if (!['admin', 'owner'].includes(userType)) {
+        await logAudit({
+          req,
+          action: 'create user',
+          status: 'failure',
+          category: 'validation',
+          details: `Invalid role: ${userType}`,
+          target: username
+        });
         return res.status(400).json({ success: false, message: 'Invalid role' });
       }
 
@@ -1180,6 +1594,14 @@ router.post('/admin/create-user',
       });
 
       if (existingUser) {
+        await logAudit({
+          req,
+          action: 'create user',
+          status: 'failure',
+          category: 'validation',
+          details: 'Username or email already exists',
+          target: username
+        });
         return res.status(400).json({ success: false, message: 'Username or email already exists' });
       }
 
@@ -1197,7 +1619,11 @@ router.post('/admin/create-user',
         favoriteplace: [],
         createdreview: []
       });
-      await logAction(req, `Created user: ${username} (${userType})`);
+      await logAction(req, `Created user: ${username} (${userType})`, {
+        category: 'admin',
+        action: 'create user',
+        target: username
+      });
       return res.json({ success: true, message: 'User created successfully' });
       
     } catch (err) {
@@ -1215,16 +1641,48 @@ router.post('/admin/change-role',
       const { userId, newRole } = req.body;
 
       if (!userId || !newRole) {
+        await logAudit({
+          req,
+          action: 'change role',
+          status: 'failure',
+          category: 'validation',
+          details: 'Missing userId or newRole',
+          target: userId || ''
+        });
         return res.status(400).json({ success: false, message: 'Missing required fields' });
       }
 
       if (!['admin', 'owner', 'rater'].includes(newRole)) {
+        await logAudit({
+          req,
+          action: 'change role',
+          status: 'failure',
+          category: 'validation',
+          details: `Invalid role: ${newRole}`,
+          target: userId
+        });
         return res.status(400).json({ success: false, message: 'Invalid role' });
       }
       const user = await userModel.findById(userId);
 
+      if (!user) {
+        await logAudit({
+          req,
+          action: 'change role',
+          status: 'failure',
+          category: 'validation',
+          details: 'User not found',
+          target: userId
+        });
+        return res.status(404).json({ success: false, message: 'User not found' });
+      }
+
       await userModel.findByIdAndUpdate(userId, { userType: newRole });
-      await logAction(req, `Changed role of ${user.username} to ${newRole}`);
+      await logAction(req, `Changed role of ${user.username} to ${newRole}`, {
+        category: 'admin',
+        action: 'change role',
+        target: user.username
+      });
 
       return res.json({ success: true, message: 'Role updated successfully' });
     } catch (err) {
@@ -1258,13 +1716,26 @@ router.get('/admin/audit',
     if (startDate || endDate) {
       filter.timestamp = {};
       if (startDate) filter.timestamp.$gte = new Date(startDate);
-      if (endDate) filter.timestamp.$lte = new Date(endDate);
+      if (endDate) {
+        const end = new Date(endDate);
+        end.setHours(23, 59, 59, 999);
+        filter.timestamp.$lte = end;
+      }
     }
 
     const logs = await auditModel
       .find(filter)
       .sort({ timestamp: -1 })
       .lean();
+
+    await logAudit({
+      req,
+      action: 'view audit trails',
+      status: 'success',
+      category: 'admin',
+      details: 'Opened audit log page',
+      target: ''
+    });
 
     res.render('audit', {
       layout: 'index',
@@ -1289,10 +1760,26 @@ async function checkOwnership(req, res, next) {
     const est = await establishmentModel.findById(req.params.establishmentId).lean();
 
     if (!est) {
+      await logAudit({
+        req,
+        action: 'establishment access',
+        status: 'failure',
+        category: 'authorization',
+        details: 'Establishment not found',
+        target: req.params.establishmentId
+      });
       return res.status(404).json({ message: 'Not found' });
     }
 
     if (est.owner_username !== req.session.username) {
+      await logAudit({
+        req,
+        action: 'establishment access',
+        status: 'failure',
+        category: 'authorization',
+        details: 'User is not establishment owner',
+        target: est.establishment_name || req.params.establishmentId
+      });
       return res.status(403).json({ message: 'Unauthorized' });
     }
 
@@ -1375,13 +1862,24 @@ router.post('/edit-establishment/:establishmentId',
       { new: true }
     );
 
-    await logAction(req, `Edited establishment: ${updated.establishment_name}`);
-
+    await logAction(req, `Edited establishment: ${updated.establishment_name}`, {
+      category: 'content',
+      action: 'edit establishment',
+      target: updated.establishment_name
+    });
 
     res.json({ success: true, updated });
 
   } catch (err) {
     console.error(err);
+    await logAudit({
+      req,
+      action: 'edit establishment',
+      status: 'failure',
+      category: 'content',
+      details: err.message || 'Server error',
+      target: req.params.establishmentId
+    });
     res.status(500).json({ success: false });
   }
 });
@@ -1396,13 +1894,25 @@ router.post('/delete-establishment/:establishmentId',
 
     await establishmentModel.findByIdAndDelete(req.params.establishmentId);
 
-    await logAction(req, `Deleted establishment: ${est.establishment_name}`);
+    await logAction(req, `Deleted establishment: ${est.establishment_name}`, {
+      category: 'content',
+      action: 'delete establishment',
+      target: est.establishment_name
+    });
 
     res.json({ success: true });
   
     
   } catch (err) {
     console.error(err);
+    await logAudit({
+      req,
+      action: 'delete establishment',
+      status: 'failure',
+      category: 'content',
+      details: err.message || 'Server error',
+      target: req.params.establishmentId
+    });
     res.status(500).json({ success: false });
   }
 });
@@ -1427,6 +1937,14 @@ router.post('/delete-establishment/:establishmentId',
           // check if the user exists
           if (!user) {
             console.log('User not found');
+            logAuditFireAndForget({
+              req,
+              action: 'add favorite',
+              status: 'failure',
+              category: 'content',
+              details: 'User not found',
+              target: establishment_name || ''
+            });
             return res.status(404).json({ success: false, message: 'User not found' });
           }
   
@@ -1438,10 +1956,30 @@ router.post('/delete-establishment/:establishmentId',
           } else {
             // establishment already in favorites
             console.log('Establishment is already a favorite.');
+            logAuditFireAndForget({
+              req,
+              username,
+              userType: req.session.userType,
+              action: 'add favorite',
+              status: 'failure',
+              category: 'validation',
+              details: 'Already in favorites',
+              target: establishment_name || ''
+            });
             return Promise.reject({ success: false, message: 'Establishment is already a favorite.' });
           }
         })
         .then(function() {
+          logAuditFireAndForget({
+            req,
+            username: req.session.username,
+            userType: req.session.userType,
+            action: 'add favorite',
+            status: 'success',
+            category: 'content',
+            details: 'Added to favorites',
+            target: req.body.establishment_name || ''
+          });
           return res.json({ success: true, message: 'Added to favorites!' });
         })
         .catch(function(error) {
@@ -1487,8 +2025,11 @@ router.post('/delete-establishment/:establishmentId',
       { $push: { createdreview: { review_photo, place_name, review_title } } }
     );
 
-    // 🔥 AUDIT LOG
-    await logAction(req, `Posted review on: ${place_name}`);
+    await logAction(req, `Posted review on: ${place_name}`, {
+      category: 'content',
+      action: 'submit review',
+      target: place_name
+    });
 
     console.log('\nReview submitted');
 
@@ -1503,6 +2044,14 @@ router.post('/delete-establishment/:establishmentId',
 
   } catch (error) {
     console.error('Error:', error);
+    await logAudit({
+      req,
+      action: 'submit review',
+      status: 'failure',
+      category: 'content',
+      details: error.message || 'Server error',
+      target: req.body.place_name || ''
+    });
     res.status(500).json({
       success: false,
       message: 'An error occurred while processing your request.'
@@ -1518,6 +2067,14 @@ router.post('/delete-establishment/:establishmentId',
     const review = await reviewModel.findById(req.params.reviewId);
 
     if (!review) {
+      await logAudit({
+        req,
+        action: 'edit review',
+        status: 'failure',
+        category: 'validation',
+        details: 'Review not found',
+        target: req.params.reviewId
+      });
       return res.status(404).json({ success: false });
     }
 
@@ -1525,6 +2082,14 @@ router.post('/delete-establishment/:establishmentId',
       review.username !== req.session.username &&
       req.session.userType !== 'admin'
     ) {
+      await logAudit({
+        req,
+        action: 'edit review',
+        status: 'failure',
+        category: 'authorization',
+        details: 'Not owner or admin',
+        target: review.place_name || req.params.reviewId
+      });
       return res.status(403).json({ success: false });
     }
 
@@ -1537,6 +2102,15 @@ router.post('/delete-establishment/:establishmentId',
       },
       { new: true }
     );
+
+    await logAudit({
+      req,
+      action: 'edit review',
+      status: 'success',
+      category: 'content',
+      details: 'Review updated',
+      target: updated.place_name || req.params.reviewId
+    });
 
     res.json({ success: true, updated });
 });
@@ -1557,6 +2131,14 @@ router.post('/delete-establishment/:establishmentId',
     }, { new: true })
     .then(review => {
         if (!review) {
+            logAuditFireAndForget({
+              req,
+              action: 'submit comment',
+              status: 'failure',
+              category: 'validation',
+              details: 'Review not found',
+              target: reviewId || ''
+            });
             return res.status(404).json({ success: false, message: 'Review not found' });
         }
 
@@ -1566,10 +2148,27 @@ router.post('/delete-establishment/:establishmentId',
             comment: comment
         };
 
+        logAuditFireAndForget({
+          req,
+          action: 'submit comment',
+          status: 'success',
+          category: 'content',
+          details: 'Comment posted',
+          target: reviewId
+        });
+
         res.json({ success: true, newComment: newComment });
     })
     .catch(error => {
         console.error('Error submitting comment:', error);
+        logAuditFireAndForget({
+          req,
+          action: 'submit comment',
+          status: 'failure',
+          category: 'content',
+          details: error.message || 'Server error',
+          target: reviewId || ''
+        });
         res.status(500).json({ success: false, message: 'Error submitting comment' });
     });
 });
@@ -1667,6 +2266,14 @@ router.post('/delete-establishment/:establishmentId',
         const [loggedInUserUpdated, followedUserUpdated] = await Promise.all([updateLoggedInUser, updateFollowedUser]);
 
         if (!loggedInUserUpdated || !followedUserUpdated) {
+            await logAudit({
+              req,
+              action: 'follow user',
+              status: 'failure',
+              category: 'content',
+              details: 'User not found',
+              target: usernameToFollow
+            });
             return res.status(404).send('User not found.');
         }
 
@@ -1677,9 +2284,26 @@ router.post('/delete-establishment/:establishmentId',
           );
       }
 
+        await logAudit({
+          req,
+          action: 'follow user',
+          status: 'success',
+          category: 'content',
+          details: 'Followed user',
+          target: usernameToFollow
+        });
+
         res.send(loggedInUserUpdated);
     } catch (err) {
         console.error('Error following user:', err);
+        await logAudit({
+          req,
+          action: 'follow user',
+          status: 'failure',
+          category: 'content',
+          details: err.message || 'Server error',
+          target: req.params.username || ''
+        });
         res.status(500).send('Error following user.');
     }
   });
@@ -1705,6 +2329,14 @@ router.post('/delete-establishment/:establishmentId',
         const [loggedInUserUpdated, unfollowedUserUpdated] = await Promise.all([updateLoggedInUser, updateUnfollowedUser]);
 
         if (!loggedInUserUpdated || !unfollowedUserUpdated) {
+            await logAudit({
+              req,
+              action: 'unfollow user',
+              status: 'failure',
+              category: 'content',
+              details: 'User not found',
+              target: usernameToUnfollow
+            });
             return res.status(404).send('User not found.');
         }
 
@@ -1722,9 +2354,26 @@ router.post('/delete-establishment/:establishmentId',
           );
       }
 
+        await logAudit({
+          req,
+          action: 'unfollow user',
+          status: 'success',
+          category: 'content',
+          details: 'Unfollowed user',
+          target: usernameToUnfollow
+        });
+
         res.send(loggedInUserUpdated);
     } catch (err) {
         console.error('Error unfollowing user:', err);
+        await logAudit({
+          req,
+          action: 'unfollow user',
+          status: 'failure',
+          category: 'content',
+          details: err.message || 'Server error',
+          target: req.params.username || ''
+        });
         res.status(500).send('Error unfollowing user.');
     }
   });
@@ -1806,6 +2455,14 @@ router.post('/delete-establishment/:establishmentId',
           // Check if the user exists
           if (!user) {
             console.log('User not found');
+            logAuditFireAndForget({
+              req,
+              action: 'remove favorite',
+              status: 'failure',
+              category: 'content',
+              details: 'User not found',
+              target: establishment_name || ''
+            });
             return res.status(404).json({ success: false, message: 'User not found' });
           }
 
@@ -1818,10 +2475,30 @@ router.post('/delete-establishment/:establishmentId',
           } else {
             // Establishment not found in favorites
             console.log('Establishment not found in favorites.');
+            logAuditFireAndForget({
+              req,
+              username,
+              userType: req.session && req.session.userType,
+              action: 'remove favorite',
+              status: 'failure',
+              category: 'validation',
+              details: 'Not in favorites',
+              target: establishment_name || ''
+            });
             return Promise.reject({ success: false, message: 'Establishment not found in favorites.' });
           }
         })
         .then(function() {
+          logAuditFireAndForget({
+            req,
+            username: req.session && req.session.username,
+            userType: req.session && req.session.userType,
+            action: 'remove favorite',
+            status: 'success',
+            category: 'content',
+            details: 'Removed from favorites',
+            target: req.body.establishment_name || ''
+          });
           return res.json({ success: true, message: 'Removed from favorites!' });
         })
         .catch(function(error) {
@@ -1840,6 +2517,14 @@ router.post('/delete-establishment/:establishmentId',
       const review = await reviewModel.findById(req.params.reviewId);
 
       if (!review) {
+        await logAudit({
+          req,
+          action: 'delete review',
+          status: 'failure',
+          category: 'validation',
+          details: 'Review not found',
+          target: req.params.reviewId
+        });
         return res.status(404).json({ success: false, message: 'Review not found' });
       }
 
@@ -1847,6 +2532,14 @@ router.post('/delete-establishment/:establishmentId',
         review.username !== req.session.username &&
         req.session.userType !== 'admin'
       ) {
+        await logAudit({
+          req,
+          action: 'delete review',
+          status: 'failure',
+          category: 'authorization',
+          details: 'Not owner or admin',
+          target: review.place_name || req.params.reviewId
+        });
         return res.status(403).json({ success: false, message: 'Unauthorized' });
       }
 
@@ -1857,9 +2550,26 @@ router.post('/delete-establishment/:establishmentId',
         { $pull: { createdreview: { place_name: review.place_name, review_title: review.review_title } } }
       );
 
+      await logAudit({
+        req,
+        action: 'delete review',
+        status: 'success',
+        category: 'content',
+        details: 'Review removed',
+        target: review.place_name || ''
+      });
+
       return res.json({ success: true, message: 'Review removed successfully' });
     } catch (error) {
       console.error('Error deleting review:', error);
+      await logAudit({
+        req,
+        action: 'delete review',
+        status: 'failure',
+        category: 'content',
+        details: error.message || 'Server error',
+        target: req.params.reviewId
+      });
       return res.status(500).json({ success: false, message: 'An error occurred' });
     }
   });
