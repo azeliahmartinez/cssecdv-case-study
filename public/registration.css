@@ -319,6 +319,7 @@
 }
 
 .forgot-form-group input[type="text"],
+.forgot-form-group input[type="email"],
 .forgot-form-group input[type="password"] {
     width: 100%;
     box-sizing: border-box;
@@ -333,6 +334,7 @@
 }
 
 .forgot-form-group input[type="text"]:focus,
+.forgot-form-group input[type="email"]:focus,
 .forgot-form-group input[type="password"]:focus {
     border-color: rgba(106, 75, 63, 0.38);
     box-shadow: 0 0 0 4px rgba(106, 75, 63, 0.08);
@@ -361,9 +363,17 @@
     color: #6a4b3f;
 }
 
+.forgot-password-right form {
+    width: 100%;
+}
+
+.forgot-password-right .forgot-form-group {
+    margin-bottom: 18px;
+}
+
 .forgot-password-button {
     margin-top: 8px;
-    min-width: 190px;
+    width: 100%;
     padding: 14px 18px;
     border-radius: 14px;
     border: 1px solid #6a4b3f;
