@@ -1792,61 +1792,82 @@ async function checkOwnership(req, res, next) {
 }
 
     // read establishment
-    router.get('/establishment/:name', function (req, resp) {
-      const establishmentName = req.params.name;
-      const establishmentSearchQuery = { establishment_name: establishmentName };
-      const reviewSearchQuery = { place_name: establishmentName};
-      const ratingFilter = req.query.rating;
-      console.log('\nCurrently at Establishment Page: ' + establishmentName);
-      console.log('Username:', req.session.username);
-      
-      establishmentModel.findOne(establishmentSearchQuery).lean().then(function(establishment_data) {
-        reviewModel.find(reviewSearchQuery).lean().then(function(review_data){
-          if (!establishment_data) {
-            console.log('Establishment data not found.');
-            resp.redirect('/error');
-            return;
-          }
+// read establishment
+router.get('/establishment/:name', async function (req, resp) {
+  try {
+    const establishmentName = req.params.name;
+    const establishmentSearchQuery = { establishment_name: establishmentName };
+    const reviewSearchQuery = { place_name: establishmentName };
+    const ratingFilter = req.query.rating;
 
-          const reviewCount = review_data.length;
+    console.log('\nCurrently at Establishment Page: ' + establishmentName);
+    console.log('Username:', req.session.username);
 
-          if (ratingFilter) {
-            review_data = review_data.filter(review => review.rating.toString() === ratingFilter);
-          }
+    // ✅ USE AWAIT (NO .then)
+    const establishment_data = await establishmentModel.findOne(establishmentSearchQuery).lean();
 
-          const ratingDistribution = { 1: 0, 2: 0, 3: 0, 4: 0, 5: 0 };
-          
-          review_data.forEach(function (review) {
-            ratingDistribution[review.rating]++;
-          });
+    if (!establishment_data) {
+      console.log('Establishment data not found.');
+      return resp.redirect('/error');
+    }
 
-          console.log('Rating Distribution:', ratingDistribution);
+    let review_data = await reviewModel.find(reviewSearchQuery).lean();
 
-          //console.log('Establishment Data:', establishment_data);
-          //console.log('Review Data: ', review_data);
-          const isOwnerOfThisEstablishment =
-          req.session.userType === 'admin' ||
-          establishment_data.owner_username === req.session.username;
+    const reviewCount = review_data.length;
 
-          resp.render('establishment', {
-            layout: 'index',
-            title: establishmentName,
-            reviewData: review_data,
-            establishment: establishment_data,
-            reviewCount: reviewCount,
-            currentUser: req.session.username,
-            currentUserIcon: req.session.user_icon,
-            currentUserType: req.session.userType,
-              // ✅ ADD THIS
-            isOwner: req.session.userType === 'owner' || req.session.userType === 'admin',
-            isOwnerOfThisEstablishment: isOwnerOfThisEstablishment,
-            selectedRatingFilter: ratingFilter,
-            establishmentRating: establishment_data.establishment_ratings,
-            ratingDistribution: JSON.stringify(ratingDistribution)
-          });
-        });
-      });
+    if (ratingFilter) {
+      review_data = review_data.filter(review => review.rating.toString() === ratingFilter);
+    }
+
+    const ratingDistribution = { 1: 0, 2: 0, 3: 0, 4: 0, 5: 0 };
+
+    review_data.forEach(function (review) {
+      ratingDistribution[review.rating]++;
     });
+
+    console.log('Rating Distribution:', ratingDistribution);
+
+    const isOwnerOfThisEstablishment =
+      req.session.userType === 'admin' ||
+      establishment_data.owner_username === req.session.username;
+
+    // ✅ FIXED FAVORITE CHECK (NOW VALID)
+    let isFavorited = false;
+
+    if (req.session.username) {
+      const user = await userModel.findOne({ username: req.session.username });
+
+      if (user && user.favoriteplace.includes(establishmentName)) {
+        isFavorited = true;
+      }
+    }
+
+    resp.render('establishment', {
+      layout: 'index',
+      title: establishmentName,
+      reviewData: review_data,
+      establishment: establishment_data,
+      reviewCount: reviewCount,
+      currentUser: req.session.username,
+      currentUserIcon: req.session.user_icon,
+      currentUserType: req.session.userType,
+
+      isOwner: req.session.userType === 'owner' || req.session.userType === 'admin',
+      isOwnerOfThisEstablishment: isOwnerOfThisEstablishment,
+
+      selectedRatingFilter: ratingFilter,
+      establishmentRating: establishment_data.establishment_ratings,
+      ratingDistribution: JSON.stringify(ratingDistribution),
+
+      // ✅ THIS FIXES YOUR BUTTON STATE
+      isFavorited: isFavorited
+    });
+
+  } catch (error) {
+    console.error(error);
+    resp.status(500).send('Server error');
+  }
+});
 
 
   // Route for editing establishment details
@@ -1919,76 +1940,66 @@ router.post('/delete-establishment/:establishmentId',
 
 
   // AAAAAAA ESTAB SAVES TO FAVORITES !!!!!!! TIME CHECK 2:18AM
-  router.post('/add-to-favorites', requireAuth, function(req, res) {
+  router.post('/add-to-favorites', requireAuth, async function(req, res) {
     try {
-      console.log('Request body:', req.body); 
-  
-      // retrieve the establishment name from the request body
       const establishment_name = req.body.establishment_name;
-      console.log('Establishment name:', establishment_name);
-  
       const username = req.session.username;
-      console.log('Username:', username);
-  
-      // find the user document in the database
-      userModel.findOne({ username }).then(function(user) {
-          console.log('User found:', user);
-  
-          // check if the user exists
-          if (!user) {
-            console.log('User not found');
-            logAuditFireAndForget({
-              req,
-              action: 'add favorite',
-              status: 'failure',
-              category: 'content',
-              details: 'User not found',
-              target: establishment_name || ''
-            });
-            return res.status(404).json({ success: false, message: 'User not found' });
-          }
-  
-          // update the user's favorite establishments
-          if (!user.favoriteplace.includes(establishment_name)) {
-            user.favoriteplace.push(establishment_name);
-            console.log('Favorite place added:', establishment_name);
-            return user.save();
-          } else {
-            // establishment already in favorites
-            console.log('Establishment is already a favorite.');
-            logAuditFireAndForget({
-              req,
-              username,
-              userType: req.session.userType,
-              action: 'add favorite',
-              status: 'failure',
-              category: 'validation',
-              details: 'Already in favorites',
-              target: establishment_name || ''
-            });
-            return Promise.reject({ success: false, message: 'Establishment is already a favorite.' });
-          }
-        })
-        .then(function() {
-          logAuditFireAndForget({
-            req,
-            username: req.session.username,
-            userType: req.session.userType,
-            action: 'add favorite',
-            status: 'success',
-            category: 'content',
-            details: 'Added to favorites',
-            target: req.body.establishment_name || ''
-          });
-          return res.json({ success: true, message: 'Added to favorites!' });
-        })
-        .catch(function(error) {
-          console.error('Error:', error);
-          return res.status(500).json({ success: false, message: 'An error occurred' });
+
+      // PREVENT MANAGER / OWNER
+      if (req.session.userType !== 'rater') {
+        return res.status(403).json({
+          success: false,
+          message: 'Only users can favorite establishments'
         });
+      }
+
+      const user = await userModel.findOne({ username });
+
+      if (!user) {
+        return res.status(404).json({
+          success: false,
+          message: 'User not found'
+        });
+      }
+
+      // TOGGLE LOGIC
+      const index = user.favoriteplace.indexOf(establishment_name);
+
+      let actionType = '';
+
+      if (index === -1) {
+        user.favoriteplace.push(establishment_name);
+        actionType = 'added';
+      } else {
+        user.favoriteplace.splice(index, 1);
+        actionType = 'removed';
+      }
+
+      await user.save();
+
+      // AUDIT LOG (AFTER SAVE)
+      logAuditFireAndForget({
+        req,
+        username,
+        userType: req.session.userType,
+        action: actionType === 'added' ? 'add favorite' : 'remove favorite',
+        status: 'success',
+        category: 'content',
+        details: actionType === 'added' ? 'Added to favorites' : 'Removed from favorites',
+        target: establishment_name || ''
+      });
+
+      return res.json({
+        success: true,
+        action: actionType
+      });
+
     } catch (error) {
       console.error('Error:', error);
-      return res.status(500).json({ success: false, message: 'An error occurred' });
+      return res.status(500).json({
+        success: false,
+        message: 'An error occurred'
+      });
     }
   });
   

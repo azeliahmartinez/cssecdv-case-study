@@ -56,7 +56,7 @@
                 
                 <!--buttons row-->
                 <div class="navigate-container">
-                    <button class="favorite" data-establishment_name="{{establishment.establishment_name}}">
+                    <button class="favorite {{#if isFavorited}}active{{/if}}" data-establishment_name="{{establishment.establishment_name}}">
                         <i class="fa fa-bookmark" aria-hidden="true"></i> Favorite
                     </button>
 

@@ -22,7 +22,6 @@
                             <th>Address</th>
                             <th>Price Range</th>
                             <th>Owner</th>
-                            <th>Visit Page</th>
                             <th>Actions</th>
                         </tr>
                     </thead>
@@ -45,16 +44,13 @@
                             <td>{{establishment_address}}</td>
                             <td>{{price_range}}</td>
                             <td>{{establishment_owner}}</td>
-                            <td>
-                                <button class="owner-visit-btn" onclick="redirectToEstablishment('{{establishment_name}}')">
-                                    Visit Page
-                                </button>
+
                             </td>
                             <td>
                                 <div class="owner-action-group">
-                                    <button class="owner-action-btn owner-edit-btn" onclick="redirectToEstablishment('{{establishment_name}}')">
-                                        Edit
-                                    </button>
+                                <button class="owner-visit-btn" onclick="redirectToEstablishment('{{establishment_name}}')">
+                                    Visit Page
+                                </button>
                                     <button class="owner-action-btn owner-delete-btn" onclick="deleteEstablishment('{{_id}}')">
                                         Delete
                                     </button>

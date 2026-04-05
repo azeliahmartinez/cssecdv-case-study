@@ -57,8 +57,8 @@ document.addEventListener("DOMContentLoaded", function() {
   const favoriteButtons = document.querySelectorAll('.favorite');
   favoriteButtons.forEach(button => {
     button.addEventListener('click', function(event) {
-      const establishment_name = event.target.dataset.establishment_name;
-      addToFavorites(establishment_name);
+      const establishment_name = event.currentTarget.dataset.establishment_name;
+      addToFavorites(establishment_name, event.currentTarget);
     });
   });
 
@@ -169,7 +169,7 @@ function createEstablishment() {
   
 
 // function to add establishment to current user's favorites
-function addToFavorites(establishment_name) {
+function addToFavorites(establishment_name, button) {
   fetch('/add-to-favorites', {
     method: 'POST',
     headers: {
@@ -177,23 +177,21 @@ function addToFavorites(establishment_name) {
     },
     body: JSON.stringify({ establishment_name }),
   })
-  .then(response => {
-      if (!response.ok) {
-        throw new Error('Failed to add to favorites. Please try again.');
-      }
-      return response.json();
-  })
+  .then(res => res.json())
   .then(data => {
-      console.log(data);
-      if (data.success) {
-        alert('Added to favorites!');
+    if (data.success) {
+      if (data.action === 'added') {
+        button.classList.add('active'); // highlight
       } else {
-        alert(data.message);
+        button.classList.remove('active'); // remove highlight
       }
+    } else {
+      alert(data.message);
+    }
   })
-  .catch(error => {
-    console.error('Error:', error);
-    alert('An error occurred while processing your request.');
+  .catch(err => {
+    console.error(err);
+    alert('Error processing favorite');
   });
 }
 

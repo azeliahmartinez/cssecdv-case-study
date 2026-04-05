@@ -176,6 +176,16 @@
     border: 1px solid #6a4b3f;
 }
 
+.navigate-container button.favorite.active {
+  background-color: #c49a6c;
+  border: 1px solid #c49a6c;
+  color: #fff;
+}
+
+.navigate-container button.favorite.active i {
+  transform: scale(1.1);
+}
+
 /* dropdown container */
 .share-dropdown {
     position: relative;
