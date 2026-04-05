@@ -63,6 +63,15 @@ async function finalizeForgottenPasswordReset(user, password, req, auditMessage)
       message: 'Password must contain uppercase, lowercase, number, and 8+ chars'
     };
   }
+  // PREVENT SAME AS CURRENT PASSWORD
+  const isSameAsCurrent = await bcrypt.compare(password, user.password);
+
+  if (isSameAsCurrent) {
+    return {
+      ok: false,
+      message: 'New password cannot be the same as your current password'
+    };
+  }
   if (user.passwordChangedAt) {
     const oneDay = 24 * 60 * 60 * 1000;
     const timeSinceLastChange = Date.now() - new Date(user.passwordChangedAt).getTime();
@@ -1024,7 +1033,25 @@ router.post('/reset-password/:token', async (req, res) => {
         message: 'Password must contain uppercase, lowercase, number, and 8+ chars'
       });
     }
+    const isSameAsCurrent = await bcrypt.compare(password, user.password);
 
+    if (isSameAsCurrent) {
+      await logAudit({
+        req,
+        username: user.username,
+        userType: user.userType,
+        action: 'password reset',
+        status: 'failure',
+        category: 'validation',
+        details: 'Same as current password',
+        target: user.email
+      });
+
+      return res.json({
+        success: false,
+        message: 'New password cannot be the same as your current password'
+      });
+    }
     // PASSWORD REUSE CHECK
     const isReused = await Promise.all(
       (user.passwordHistory || []).map(p => bcrypt.compare(password, p))
@@ -1153,7 +1180,26 @@ router.post('/change-password', requireAuth, async function(req, resp) {
         message: 'Current password is incorrect'
       });
     }
+    // PREVENT SAME PASSWORD AS CURRENT
+    const isSameAsCurrent = await bcrypt.compare(newPassword, user.password);
 
+    if (isSameAsCurrent) {
+      await logAudit({
+        req,
+        username,
+        userType: req.session.userType,
+        action: 'change password',
+        status: 'failure',
+        category: 'validation',
+        details: 'New password same as current',
+        target: username
+      });
+
+      return resp.json({
+        success: false,
+        message: 'New password cannot be the same as your current password'
+      });
+    }
     // PASSWORD COMPLEXITY
     if (!PASSWORD_REGEX.test(newPassword)) {
       await logAudit({
