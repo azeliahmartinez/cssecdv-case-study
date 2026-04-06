@@ -46,9 +46,7 @@ function validateRecoveryPair(question, answer) {
 }
 
 function clearPasswordResetSession(req) {
-  req.session.resetOTP = null;
   req.session.resetEmail = null;
-  req.session.resetOTPExpires = null;
   req.session.resetMode = null;
   req.session.resetQuestionExpires = null;
 }
@@ -671,76 +669,32 @@ router.get('/forgotpassword', function (req, res) {
   });
 });
 
- router.post('/forgot-password', async (req, res) => {
+router.post('/forgot-password', async (req, res) => {
   try {
     const { email } = req.body;
 
     const user = await userModel.findOne({ email });
 
     if (!user) {
-      await logAudit({
-        req,
-        username: 'anonymous',
-        userType: 'none',
-        action: 'password reset request',
-        status: 'failure',
-        category: 'authentication',
-        details: 'Email not found',
-        target: email || ''
-      });
       return res.json({ success: false, message: 'Email not found' });
     }
 
-    if (user.recoveryAnswerHash && user.recoveryQuestion) {
-      req.session.resetMode = 'question';
-      req.session.resetEmail = email;
-      req.session.resetQuestionExpires = Date.now() + (10 * 60 * 1000);
-      req.session.resetOTP = null;
-      req.session.resetOTPExpires = null;
-      await logAudit({
-        req,
-        username: user.username,
-        userType: user.userType,
-        action: 'password reset request',
-        status: 'success',
-        category: 'authentication',
-        details: 'Recovery question flow started',
-        target: email
-      });
+    if (!user.recoveryAnswerHash || !user.recoveryQuestion) {
       return res.json({
-        success: true,
-        mode: 'question',
-        question: user.recoveryQuestion,
-        message: 'Answer your recovery question to continue.'
+        success: false,
+        message: 'Recovery question is not set for this account'
       });
     }
 
-    const otp = Math.floor(100000 + Math.random() * 900000).toString();
-
-    req.session.resetMode = 'otp';
-    req.session.resetOTP = otp;
+    req.session.resetMode = 'question';
     req.session.resetEmail = email;
-    req.session.resetOTPExpires = Date.now() + (10 * 60 * 1000);
-    req.session.resetQuestionExpires = null;
-
-    console.log(`OTP for ${email}: ${otp}`);
-
-    await logAudit({
-      req,
-      username: user.username,
-      userType: user.userType,
-      action: 'password reset request',
-      status: 'success',
-      category: 'authentication',
-      details: 'OTP issued (dev console)',
-      target: email
-    });
+    req.session.resetQuestionExpires = Date.now() + (10 * 60 * 1000);
 
     return res.json({
       success: true,
-      mode: 'otp',
-      message: 'OTP sent (check console)'
+      question: user.recoveryQuestion
     });
+
   } catch (err) {
     console.error(err);
     res.status(500).json({ success: false });
@@ -749,123 +703,56 @@ router.get('/forgotpassword', function (req, res) {
 
 router.post('/verify-reset', async (req, res) => {
   try {
-    const { email, otp, password, recoveryAnswer } = req.body;
+    const { email, password, recoveryAnswer } = req.body;
 
     const user = await userModel.findOne({ email });
+
     if (!user) {
-      await logAudit({
-        req,
-        username: 'anonymous',
-        userType: 'none',
-        action: 'password reset',
-        status: 'failure',
-        category: 'authentication',
-        details: 'Email not found during reset',
-        target: email || ''
-      });
-      return res.json({ success: false, message: 'Invalid or expired OTP' });
+      return res.json({ success: false, message: 'User not found' });
     }
 
-    const questionSessionOk =
-      req.session.resetMode === 'question' &&
-      req.session.resetEmail === email &&
-      (req.session.resetQuestionExpires || 0) > Date.now();
-
-    if (questionSessionOk) {
-      if (!user.recoveryAnswerHash) {
-        await logAudit({
-          req,
-          username: user.username,
-          userType: user.userType,
-          action: 'password reset',
-          status: 'failure',
-          category: 'authentication',
-          details: 'Recovery not configured',
-          target: email
-        });
-        return res.json({ success: false, message: 'Recovery is not set for this account' });
-      }
-      const answerOk = await bcrypt.compare(
-        normalizeRecoveryAnswer(recoveryAnswer),
-        user.recoveryAnswerHash
-      );
-      if (!answerOk) {
-        await logAudit({
-          req,
-          username: user.username,
-          userType: user.userType,
-          action: 'password reset',
-          status: 'failure',
-          category: 'authentication',
-          details: 'Incorrect recovery answer',
-          target: email
-        });
-        return res.json({ success: false, message: 'Incorrect recovery answer' });
-      }
-      const result = await finalizeForgottenPasswordReset(
-        user,
-        password,
-        req,
-        `Password reset with recovery question: ${email}`
-      );
-      if (!result.ok) {
-        await logAudit({
-          req,
-          username: user.username,
-          userType: user.userType,
-          action: 'password reset',
-          status: 'failure',
-          category: 'validation',
-          details: result.message,
-          target: email
-        });
-        return res.json({ success: false, message: result.message });
-      }
-      return res.json({ success: true, message: 'Password reset successful' });
-    }
-
-    const cleanOTP = String(otp || '').trim();
+    // ✅ CHECK SESSION (RECOVERY FLOW ONLY)
     if (
+      req.session.resetMode !== 'question' ||
       req.session.resetEmail !== email ||
-      req.session.resetOTP !== cleanOTP ||
-      req.session.resetOTPExpires < Date.now()
+      (req.session.resetQuestionExpires || 0) < Date.now()
     ) {
-      await logAudit({
-        req,
-        username: user.username,
-        userType: user.userType,
-        action: 'password reset',
-        status: 'failure',
-        category: 'authentication',
-        details: 'Invalid or expired OTP/session',
-        target: email
-      });
-      return res.json({ success: false, message: 'Invalid or expired OTP' });
+      return res.json({ success: false, message: 'Session expired. Try again.' });
     }
 
+    // ✅ VALIDATE RECOVERY ANSWER
+    const answerOk = await bcrypt.compare(
+      normalizeRecoveryAnswer(recoveryAnswer),
+      user.recoveryAnswerHash
+    );
+
+    if (!answerOk) {
+      return res.json({ success: false, message: 'Incorrect recovery answer' });
+    }
+
+    // ✅ FINAL PASSWORD RESET (USES YOUR EXISTING SECURE FUNCTION)
     const result = await finalizeForgottenPasswordReset(
       user,
       password,
       req,
-      `Password reset with OTP: ${email}`
+      `Password reset with recovery question: ${email}`
     );
+
     if (!result.ok) {
-      await logAudit({
-        req,
-        username: user.username,
-        userType: user.userType,
-        action: 'password reset',
-        status: 'failure',
-        category: 'validation',
-        details: result.message,
-        target: email
-      });
       return res.json({ success: false, message: result.message });
     }
-    return res.json({ success: true, message: 'Password reset successful' });
+
+    return res.json({
+      success: true,
+      message: 'Password reset successful'
+    });
+
   } catch (err) {
     console.error(err);
-    return res.status(500).json({ success: false, message: 'Server error' });
+    return res.status(500).json({
+      success: false,
+      message: 'Server error'
+    });
   }
 });
 
